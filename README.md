@@ -8,7 +8,7 @@
 
 ## Overview
 
-** My Automations ** is a structured collection of reusable workflows built for:
+**My Automations** is a structured collection of reusable workflows built for:
 
 - Business process automation  
 - AI-powered workflows  
@@ -34,13 +34,13 @@ This repository stores and organizes automation workflows so they can be reused,
 
 ## Technologies Used
 
-- ** n8n **  
-- ** OpenAI / GPT APIs **  
-- ** Webhooks **  
-- ** REST APIs **  
-- ** Google Sheets / Airtable **  
-- ** WhatsApp / Email integrations **  
-- ** CRM systems **  
+- **n8n**  
+- **OpenAI / GPT APIs**  
+- **Webhooks**  
+- **REST APIs**  
+- **Google Sheets / Airtable**  
+- **WhatsApp / Email integrations**  
+- **CRM systems**  
 
 ---
 
@@ -69,8 +69,8 @@ git clone https://github.com/your-username/my-automations.git
 
 ### 2. Import Workflow
 
-- Open ** n8n **
-- Click ** Import **
+- Open **n8n**
+- Click **Import**
 - Upload workflow JSON
 - Configure credentials
 - Activate workflow
