@@ -1,14 +1,14 @@
 
 
-#My Automations
+# My Automations
 
 **A centralized repository of automation workflows designed to streamline business processes and build scalable AI-powered systems.**
 
 ---
 
-##Overview
+## Overview
 
-**My Automations** is a structured collection of reusable workflows built for:
+** My Automations ** is a structured collection of reusable workflows built for:
 
 - Business process automation  
 - AI-powered workflows  
@@ -21,7 +21,7 @@ This repository stores and organizes automation workflows so they can be reused,
 
 ---
 
-##Purpose
+## Purpose
 
 - Store automation workflows in one place  
 - Reuse workflows across projects  
@@ -32,19 +32,19 @@ This repository stores and organizes automation workflows so they can be reused,
 
 ---
 
-##Technologies Used
+## Technologies Used
 
-- **n8n**  
-- **OpenAI / GPT APIs**  
-- **Webhooks**  
-- **REST APIs**  
-- **Google Sheets / Airtable**  
-- **WhatsApp / Email integrations**  
-- **CRM systems**  
+- ** n8n **  
+- ** OpenAI / GPT APIs **  
+- ** Webhooks **  
+- ** REST APIs **  
+- ** Google Sheets / Airtable **  
+- ** WhatsApp / Email integrations **  
+- ** CRM systems **  
 
 ---
 
-##Repository Structure
+## Repository Structure
 
 ```
 My Automations/
@@ -59,25 +59,25 @@ My Automations/
 
 ---
 
-##How to Use
+## How to Use
 
-###1. Clone Repository
+### 1. Clone Repository
 
 ```bash
 git clone https://github.com/your-username/my-automations.git
 ```
 
-###2. Import Workflow
+### 2. Import Workflow
 
-- Open **n8n**
-- Click **Import**
+- Open ** n8n **
+- Click ** Import **
 - Upload workflow JSON
 - Configure credentials
 - Activate workflow
 
 ---
 
-##Setup Requirements
+## Setup Requirements
 
 - n8n installed  
 - API keys configured  
@@ -86,7 +86,7 @@ git clone https://github.com/your-username/my-automations.git
 
 ---
 
-##Use Cases
+## Use Cases
 
 - Lead qualification automation  
 - Customer support automation  
@@ -97,6 +97,6 @@ git clone https://github.com/your-username/my-automations.git
 
 ---
 
-##License
+## License
 
-**MIT License**
+** MIT License **
