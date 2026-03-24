@@ -1,0 +1,528 @@
+{
+  "name": "AI Resume Screening Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Job Application Form",
+        "formDescription": "Complete this form to submit your job application and personal details.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "placeholder": "e.g John Doe",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email Address",
+              "fieldType": "email",
+              "placeholder": "e.g john.doe@gmail.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Phone Number",
+              "fieldType": "number",
+              "placeholder": "+91 73956 93746",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Resume",
+              "fieldType": "file",
+              "acceptFileTypes": ".pdf",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Your Job Application is Successfully Submitted, Thanks for Applying!"
+            }
+          },
+          "customCss": ":root {\n\n\t/* Page Background */\n\t--color-background: #eaf1ff;\n\n\t/* Main Form Card */\n\t--color-card-bg: #ffffff;\n\t--color-card-border: #d9e2f2;\n\t--color-card-shadow: rgba(0,0,0,0.12);\n\n\t/* Button */\n\t--color-submit-btn-bg: #5a4cc2;\n\t--color-submit-btn-text: #ffffff;\n\n\t/* Text */\n\t--color-header: #2f3440;\n\t--color-label: #444444;\n\t--color-header-subtext: #6b7280;\n\n\t/* Inputs */\n\t--color-input-border: #d6dbea;\n\t--color-input-text: #50545a;\n\t--color-focus-border: #5a4cc2;\n\n\t/* Card Style */\n\t--border-radius-card: 14px;\n\t--border-radius-input: 8px;\n\n\t/* Layout */\n\t--padding-container-top: 40px;\n\t--container-width: 520px;\n\n\t/* Strong shadow to separate form */\n\t--box-shadow-card: 0px 18px 40px rgba(0,0,0,0.15);\n}"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -928,
+        -112
+      ],
+      "id": "af06e962-6fdc-4a51-81cb-53845f9c34fd",
+      "name": "Job-Application/CV Submitted",
+      "webhookId": "35e10397-63cf-466f-87d6-f1e117d8d022"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "Resume",
+        "name": "={{ $json['Full Name'] }}-CV",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1rVnCY4bXIQvU1QSNMtab7CuBrU8ebL4e",
+          "mode": "list",
+          "cachedResultName": "AI_Automation",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1rVnCY4bXIQvU1QSNMtab7CuBrU8ebL4e"
+        },
+        "options": {
+          "simplifyOutput": true
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -704,
+        -112
+      ],
+      "id": "1ad5583c-d3b1-4a31-9a5f-37bbfe5f82aa",
+      "name": "Upload Resume",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VcAHmC7ly6NjMSDw",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -496,
+        -112
+      ],
+      "id": "a09e1848-5a41-4177-9da7-9579dde04003",
+      "name": "Download Resume",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VcAHmC7ly6NjMSDw",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -48,
+        -112
+      ],
+      "id": "630af1c8-2f0e-4513-b8ae-d2387481982c",
+      "name": "Extract Text From Resume"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        -112
+      ],
+      "id": "460d0765-6637-45a1-bfe0-37d789f96d15",
+      "name": "Extract Text from Job Description"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1imGDxMhdAKfifC-4O4gTU_VHZtS2Vut7",
+          "mode": "list",
+          "cachedResultName": "Job_Description.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1imGDxMhdAKfifC-4O4gTU_VHZtS2Vut7/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        192,
+        -112
+      ],
+      "id": "331e366f-a3fb-4150-aa45-986e7e845bcb",
+      "name": "Download Job Description",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VcAHmC7ly6NjMSDw",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Candidate Resume: \n\n----------------------------------------------\n{{ $('Extract Text From Resume').item.json.text }}\n----------------------------------------------\n\nJob Description Requirments:\n\n----------------------------------------------\n{{ $json.text }}\n----------------------------------------------\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=#Overview\n\nYou are an expert technical recruiter and hiring analyst.\n\nYour task is to analyze a candidate's resume against a provided job description and determine how well the candidate fits the role.\n\nThe user prompt will contain two clearly labeled sections:\n\n1. Candidate Resume\n2. Job Description Requirements\n\nYou must carefully compare the candidate’s qualifications, experience, and skills with the job requirements.\n\nYour final response must strictly follow the JSON structure defined by the Structured Output Parser.\n\n\n##Input Format\n\nThe user prompt will provide information in this format:\n\nCandidate Resume:\n----------------------------------------------\n[Resume Text]\n----------------------------------------------\n\nJob Description Requirements:\n----------------------------------------------\n[Job Description Text]\n----------------------------------------------\n\nUse these two sections to perform your evaluation.\n\n\n##Instructions\n\n1. Read the **Candidate Resume** carefully.\n2. Read the **Job Description Requirements** carefully.\n3. Compare the resume against the job requirements.\n4. Identify relevant skills, technologies, experience, certifications, and achievements.\n5. Determine how well the candidate matches the job requirements.\n\n\n##Evaluation Criteria\n\n###Candidate Strengths\nList specific skills, experience, or qualifications from the resume that match the job requirements.\n\n###Candidate Weaknesses\nList areas where the candidate lacks required skills, experience, or qualifications mentioned in the job description.\n\n###Risk Factor\nEvaluate the potential downside of hiring this candidate.\n\nRisk examples include:\n- Missing critical skills\n- Insufficient experience\n- Career instability\n- Poor role alignment\n\nReturn:\n- score: low, medium, or high\n- explanation: a brief description of the worst-case scenario if the candidate is hired.\n\n###Reward Factor\nEvaluate the potential upside of hiring this candidate.\n\nReward examples include:\n- Strong relevant experience\n- High growth potential\n- Rare or valuable skills\n- Leadership ability\n\nReturn:\n- score: low, medium, or high\n- explanation: a brief description of the best-case scenario if the candidate is hired.\n\n###Overall Fitting Score\n\nProvide a rating between **0 and 10** indicating how well the candidate matches the job description.\n\nGuideline:\n0–2 → Very poor match  \n3–4 → Weak match  \n5–6 → Moderate match  \n7–8 → Strong match  \n9–10 → Excellent match\n\n###Justification\nProvide a short rating justification explaining why the candidate received the given overall_fitting score. The justification should briefly reference the most important strengths, weaknesses, and risk/reward considerations from the analysis.\n\n##Important Rules\n\n- Base the evaluation only on the provided resume and job description.\n- Do not invent skills or experience not present in the resume.\n- Be objective and professional.\n- Ensure each field contains meaningful analysis.\n\n\n##Output Rules\n\nYou must return **ONLY valid JSON** that follows the Structured Output Parser schema.\n\nDo not include:\n- explanations outside JSON\n- markdown formatting\n- comments\n- additional text"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1088,
+        256
+      ],
+      "id": "6615e37c-b891-494d-8461-e83ffe24b52a",
+      "name": "Resume/CV Analyser"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Job-Application/CV Submitted').item.json['Email Address'] }}",
+        "subject": "Thanks for your Application!",
+        "message": "=<h3>Hey  {{ $('Job-Application/CV Submitted').item.json['Full Name'] }},</h3>\n\n<h4>Thanks for applying! We'he received your application and our team will review it shortly.\n<br><br>\nWe'll get back to you with the next steps.</h4>\n<h3>Best,<br>\nAS Solutions</h3>\n",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "AS Solutions Team"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -288,
+        256
+      ],
+      "id": "9d82065b-650a-4b76-bdfe-fd8b03a5530c",
+      "name": "Send Confirmation",
+      "webhookId": "bcca3106-7109-4ad7-b45f-d1262e392883",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "32215120-6309-80b2-a308-ca97f3bd7003",
+          "mode": "list",
+          "cachedResultName": "Job Application Tracker",
+          "cachedResultUrl": "https://www.notion.so/32215120630980b2a308ca97f3bd7003"
+        },
+        "title": "={{ $('Job-Application/CV Submitted').item.json['Full Name'] }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Applicant Name|title",
+              "title": "={{ $('Job-Application/CV Submitted').item.json['Full Name'] }}"
+            },
+            {
+              "key": "First Name|rich_text",
+              "textContent": "={{ $('Job-Application/CV Submitted').item.json['Full Name'].split(\" \").first() }}"
+            },
+            {
+              "key": "Last Name|rich_text",
+              "textContent": "={{ $('Job-Application/CV Submitted').item.json['Full Name'].split(\" \").last() }}"
+            },
+            {
+              "key": "Email|email",
+              "emailValue": "={{ $('Job-Application/CV Submitted').item.json['Email Address'] }}"
+            },
+            {
+              "key": "Phone Number|number",
+              "numberValue": "={{ $('Job-Application/CV Submitted').item.json['Phone Number'] }}"
+            },
+            {
+              "key": "Application Date|date",
+              "date": "={{ $now.format(\"h:mm a , d LLLL , yyyy\") }}",
+              "timezone": "Asia/Kolkata"
+            },
+            {
+              "key": "Resume|url",
+              "urlValue": "=https://drive.google.com/file/d/{{ $('Upload Resume').item.json.id }}/view"
+            },
+            {
+              "key": "Strengths|rich_text",
+              "textContent": "={{ $('Resume/CV Analyser').item.json.output.resume_screening_eveluation.candidate_strength.join(\"\\n\\n\") }}"
+            },
+            {
+              "key": "Weakness|rich_text",
+              "textContent": "={{ $('Resume/CV Analyser').item.json.output.resume_screening_eveluation.candidate_weakness.join(\"\\n\\n\") }}"
+            },
+            {
+              "key": "Risk Factor|rich_text",
+              "textContent": "={{ $('Resume/CV Analyser').item.json.output.resume_screening_eveluation.risk_factor.score }}\n\n{{ $('Resume/CV Analyser').item.json.output.resume_screening_eveluation.risk_factor.explanation }}"
+            },
+            {
+              "key": "Reward Factor|rich_text",
+              "textContent": "={{ $('Resume/CV Analyser').item.json.output.resume_screening_eveluation.reward_factor.score }}\n\n"
+            },
+            {
+              "key": "Overall Rating|number",
+              "numberValue": "={{ $('Resume/CV Analyser').item.json.output.resume_screening_eveluation.overall_fitting }}"
+            },
+            {
+              "key": "Justification|rich_text",
+              "textContent": "={{ $('Resume/CV Analyser').item.json.output.resume_screening_eveluation.rating_justification }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        256
+      ],
+      "id": "216395d0-a06f-48ca-b6b1-ffa09b4bb8ba",
+      "name": "Add to Database",
+      "credentials": {
+        "notionApi": {
+          "id": "xGxcxhAVUnypRiCf",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Get Applicant Resume And Upload It",
+        "height": 272,
+        "width": 848,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        -224
+      ],
+      "id": "fbab0ca8-d219-464c-b91c-79d84f542a04",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -1088,
+        448
+      ],
+      "id": "fa7b0a62-6a75-4fbd-b207-4bd2319ff983",
+      "name": "Virtual HR",
+      "credentials": {
+        "anthropicApi": {
+          "id": "PcjtIN6VpJTi0Pmd",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"resume_screening_eveluation\": {\n      \"type\": \"object\",\n      \"description\": \"Analyse a candidate's resume against a job description and outputs strengths, weaknesses, risk/reward assessment, overall fit score, and justification for the rating.\",\n      \"properties\": {\n        \"candidate_strength\": {\n          \"type\": \"array\",\n          \"description\": \"A list of specific strengths or qualifications that match the job requirements.\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"candidate_weakness\": {\n          \"type\": \"array\",\n          \"description\": \"A list of areas where the candidate falls short or lacks alignment with the job requirements.\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"risk_factor\": {\n          \"type\": \"object\",\n          \"description\": \"An evaluation of the potential downside of hiring this candidate.\",\n          \"properties\": {\n            \"score\": {\n              \"type\": \"string\",\n              \"enum\": [\"low\", \"medium\", \"high\"],\n              \"description\": \"Risk level associated with hiring the candidate.\"\n            },\n            \"explanation\": {\n              \"type\": \"string\",\n              \"description\": \"Explanation of the worst-case risk scenario if the candidate is hired.\"\n            }\n          }\n        },\n        \"reward_factor\": {\n          \"type\": \"object\",\n          \"description\": \"An evaluation of the potential upside of hiring this candidate.\",\n          \"properties\": {\n            \"score\": {\n              \"type\": \"string\",\n              \"enum\": [\"low\", \"medium\", \"high\"],\n              \"description\": \"Reward or upside potential if the candidate performs well.\"\n            },\n            \"explanation\": {\n              \"type\": \"string\",\n              \"description\": \"Explanation of the best-case scenario if the candidate is hired.\"\n            }\n          }\n        },\n        \"overall_fitting\": {\n          \"type\": \"integer\",\n          \"description\": \"A rating from 0 to 10 indicating how well the candidate matches the job description.\",\n          \"minimum\": 0,\n          \"maximum\": 10\n        },\n        \"rating_justification\": {\n          \"type\": \"string\",\n          \"description\": \"A concise explanation summarizing why the candidate received the overall_fitting score. It should reference key strengths, weaknesses, and risk/reward considerations that influenced the rating.\"\n        }\n      }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -944,
+        448
+      ],
+      "id": "27eab4c9-e9f8-44ed-86af-0855091e7552",
+      "name": "Format Output"
+    },
+    {
+      "parameters": {
+        "content": "## Get Resume Data And Job Description/Requirments",
+        "height": 272,
+        "width": 704,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -224
+      ],
+      "id": "b0634c2c-a3e5-425c-9294-ec34b2242aca",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Analyze And Compare",
+        "height": 352,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        208
+      ],
+      "id": "545cefc8-a609-430d-b424-2fbe39c74d90",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Send Applicant Confirmation And store Data",
+        "height": 240,
+        "width": 710,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        176
+      ],
+      "id": "d641f29a-c467-40dd-8d5e-4f0bb4ca32b6",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Job-Application/CV Submitted": {
+      "main": [
+        [
+          {
+            "node": "Upload Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Resume": {
+      "main": [
+        [
+          {
+            "node": "Download Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Resume": {
+      "main": [
+        [
+          {
+            "node": "Extract Text From Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text From Resume": {
+      "main": [
+        [
+          {
+            "node": "Download Job Description",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Job Description": {
+      "main": [
+        [
+          {
+            "node": "Extract Text from Job Description",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text from Job Description": {
+      "main": [
+        [
+          {
+            "node": "Resume/CV Analyser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resume/CV Analyser": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Add to Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Virtual HR": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Resume/CV Analyser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Resume/CV Analyser",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a9d0e40b-b2a4-4bc0-81af-0b1a075f5efa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "989074a2911041fc135d491b212a27b4bae72585d15252132315be3ee2c31a3b"
+  },
+  "id": "9fNhwFTOdpTqcetm",
+  "tags": []
+}

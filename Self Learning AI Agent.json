@@ -1,0 +1,641 @@
+{
+  "name": "Self Learning AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        -160
+      ],
+      "id": "2fc92e23-ad5d-4d20-b4eb-833dd3978ef3",
+      "name": "Message Received",
+      "webhookId": "76005be8-ce13-459c-b18c-3390b70ce178",
+      "credentials": {
+        "telegramApi": {
+          "id": "LKs8MYAvjTPvaDCQ",
+          "name": "Self learning Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        -96
+      ],
+      "id": "6a2f97b5-a6b4-4522-938d-af4f0b814405",
+      "name": "Download Audio",
+      "webhookId": "28a82934-3bee-4446-8595-bc2493d79433",
+      "credentials": {
+        "telegramApi": {
+          "id": "LKs8MYAvjTPvaDCQ",
+          "name": "Self learning Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.mime_type }}",
+                    "rightValue": "={{ $json.message.voice.mime_type }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "7c2d5e42-981a-47ad-98d1-785a1222d4cd"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0334c0f4-ae5c-48e3-89ee-197b2e2b4066",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "={{ $json.message.text }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        160
+      ],
+      "id": "8e072519-8c40-43df-a4bd-b73af7218325",
+      "name": "Text/Audio"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1AWM6OwxW3n7KX3QL9sydKE35lKQv0Tk20QBfk8RC8u0",
+          "mode": "list",
+          "cachedResultName": "AI Agent-Memory ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AWM6OwxW3n7KX3QL9sydKE35lKQv0Tk20QBfk8RC8u0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AWM6OwxW3n7KX3QL9sydKE35lKQv0Tk20QBfk8RC8u0/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        32,
+        -384
+      ],
+      "id": "8e8ef2d5-f409-45bf-90a0-cecc2b334745",
+      "name": "Memory Database",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4vitUnlIlkLXRXl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        -96
+      ],
+      "id": "e48dc0ce-df5f-4dbe-a2df-1d5282767a72",
+      "name": "Convert to Text",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TxWlO1UyD6DBj7E4",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7fc02e2d-19f1-480f-8ca4-40c4177ae195",
+              "name": "content.parts[0].text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        176
+      ],
+      "id": "3bc3c554-32fe-4198-8be1-556d302da2ac",
+      "name": "UserQuery"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.content.parts[0].text }}",
+        "options": {
+          "systemMessage": "=#Overview \nYou are an AI Assistant embedded in an n8n workflow. You can:\n -Evaluate, execute , and generate JavaScript expressions ('{{' '}}').\n-Read ,Write \"Memories\" about the user.\n-Provide helpful,context-aware responses in a conversation style.\n\n---\n\n### Memory Handling\nYou have access to to a list of past memories about the user via :\n' {{ $json.Memory }} '\n\n-To **add** a new memory , call \"Memory Database[Add Memory]\" with a **single sentence** summarising a new insight or preference.\n-Don't feel forced to always use memories- only when they add value.\n-In the case where you have multiple memories, make sure to run the memory tool multiple times for the amount of times that you have to add the memory for.\n-If you want to **Update** a memory , then also call the \"Memory Database[Add Memory] tool\".\n\n---\n\n### Response Style and Structure\n-Always respond *conversationally* , as if talking to a human.\n-If a list is neccesary, keep it short(3-5 items) , simple, and no deep nesting.\n-After your main response , optionally include a **TL;DR** one-sentence summary.\n-Maintain a tone that's helpful, confidenet (but not overbearing), and lightly friendly (no excessive jokes unless the user wants that).\n\n---\n\n### Context Awareness\n-USe relevant memories to tailor you answers (preferences, past decisions, etc.).\n-If uncertain or more context is needed, ask a claryfying question before proceeding.\n\n### Code/ Execution\n-When producing JavaScript or '{{' '}}' , ensure it's valid and safe.\n-If needed, comment the code for clarity.\n-If the user's request involves n8n workflow, be explicit: include step names, node types, and mapping.\n\n---\nCurrent Time/Date: {{ $now.format('ff') }}\n---\n\n###Example\n\n-User:Today , I just started as a freelancer doing AI Automation , I am very excited!Wanna share some.\n\n-You: \nBackened[User don't know]: First get today's date , and check if the information that user said- Starting as a freelancer is mentioned , if not , Add it to Memory Database[Add Memory] using the tool .\n-Frontend[what user sees]: [Reply nicely according to the prot given]\n-------------------------------------------------\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        976,
+        -112
+      ],
+      "id": "abe3207a-6724-44c6-8173-1cd9640a5d21",
+      "name": "Main Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Message Received').item.json.message.message_id }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1040,
+        112
+      ],
+      "id": "7e42f2f5-1e05-45cb-81b0-75c7ee8d0054",
+      "name": "Chat_Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Message Received').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        -112
+      ],
+      "id": "bb624473-b2a1-42ac-bd3a-a3ec84380c79",
+      "name": "Respond",
+      "webhookId": "5944f0b7-bcb7-4fd6-b152-5ccd032e5507",
+      "credentials": {
+        "telegramApi": {
+          "id": "LKs8MYAvjTPvaDCQ",
+          "name": "Self learning Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "Memory"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -384
+      ],
+      "id": "76f0c103-0b19-4195-87ef-4a40ded36cb2",
+      "name": "Combine Memories"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1AWM6OwxW3n7KX3QL9sydKE35lKQv0Tk20QBfk8RC8u0",
+          "mode": "list",
+          "cachedResultName": "AI Agent-Memory ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AWM6OwxW3n7KX3QL9sydKE35lKQv0Tk20QBfk8RC8u0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AWM6OwxW3n7KX3QL9sydKE35lKQv0Tk20QBfk8RC8u0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Memory": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Memory__using_to_match_', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Memory"
+          ],
+          "schema": [
+            {
+              "id": "Memory",
+              "displayName": "Memory",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        112
+      ],
+      "id": "1a362025-8bfe-4db5-a87b-5f632b17ffe7",
+      "name": "Memory Database [Add Memory]",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4vitUnlIlkLXRXl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        912,
+        112
+      ],
+      "id": "e0940b3e-07fa-4b27-b21a-a5858b1fdd49",
+      "name": "Agent",
+      "credentials": {
+        "anthropicApi": {
+          "id": "PcjtIN6VpJTi0Pmd",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Get Message",
+        "height": 304,
+        "width": 208,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -256
+      ],
+      "id": "6af0dcde-b112-4da7-952b-7c4e2845b1c2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Get Memory Data",
+        "height": 224,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -448
+      ],
+      "id": "b5692913-800a-4428-980d-2402a688a07b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Transcribe Audio",
+        "height": 192,
+        "width": 416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -144
+      ],
+      "id": "89afb15a-2c60-4686-8c8a-51c3166157c3",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## UserQuery",
+        "height": 224,
+        "width": 496,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        96
+      ],
+      "id": "4b1cea17-7de8-4bb3-ae38-7f1b826b8760",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        688,
+        -112
+      ],
+      "id": "0372d2bc-acca-47d2-801f-d035168d683d",
+      "name": "Merge Data"
+    },
+    {
+      "parameters": {
+        "content": "## Combine Inputs",
+        "height": 240,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        624,
+        -192
+      ],
+      "id": "bfd51fd1-6428-4e2d-b8ce-5d745f00ef50",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Self learning Agent",
+        "height": 480,
+        "width": 432,
+        "color": "#002D33"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -208
+      ],
+      "id": "47b7e65a-4783-4b64-b840-397be5f69f37",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Reply",
+        "height": 208,
+        "width": 192,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        -176
+      ],
+      "id": "b6d00d11-f901-45af-a784-881142c39a78",
+      "name": "Sticky Note6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Message Received": {
+      "main": [
+        [
+          {
+            "node": "Text/Audio",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Memory Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio": {
+      "main": [
+        [
+          {
+            "node": "Convert to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text/Audio": {
+      "main": [
+        [
+          {
+            "node": "Download Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UserQuery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Text": {
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Memory Database": {
+      "main": [
+        [
+          {
+            "node": "Combine Memories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UserQuery": {
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Chat_Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Main Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Main Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Memories": {
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory Database [Add Memory]": {
+      "ai_tool": [
+        [
+          {
+            "node": "Main Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Main Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Data": {
+      "main": [
+        [
+          {
+            "node": "Main Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "87e591f8-b043-45ba-b84c-767d71b6aa1b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "989074a2911041fc135d491b212a27b4bae72585d15252132315be3ee2c31a3b"
+  },
+  "id": "yGzbzDg7H6zIz2XX",
+  "tags": []
+}

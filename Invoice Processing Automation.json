@@ -1,0 +1,649 @@
+{
+  "name": "Invoice Processing Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nlABqxLijl7TipbwRNcRQ8AUShAvx890bspvCFKozoQ",
+          "mode": "list",
+          "cachedResultName": "Invoice System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nlABqxLijl7TipbwRNcRQ8AUShAvx890bspvCFKozoQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nlABqxLijl7TipbwRNcRQ8AUShAvx890bspvCFKozoQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1424,
+        208
+      ],
+      "id": "2760fd3b-4a3b-478d-ba49-e116b903777e",
+      "name": "Invoice Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4vitUnlIlkLXRXl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1hdvJhBUrNBruoi4a6VCO74r62rOIFo9O",
+          "mode": "list",
+          "cachedResultName": "Invoices",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1hdvJhBUrNBruoi4a6VCO74r62rOIFo9O"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "450d66b6-48f2-4b17-800d-e337421c9b04",
+      "name": "Invoice Uploaded",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VcAHmC7ly6NjMSDw",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "43b4a954-849b-49e9-a664-7f75121d082d",
+      "name": "Download Invoice",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VcAHmC7ly6NjMSDw",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        464,
+        0
+      ],
+      "id": "64dfa7df-1042-4978-823a-0897c7931563",
+      "name": "Extract Text From Invoice"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "##Overview\n\nYou are an AI agent responsible for retrieving invoice data from a Google Sheet and drafting a professional billing email to another company's billing team.\n\nYour workflow must always be:\n\n-First use the Google Sheets tool to retrieve invoice details.\n\n-Extract key information (invoice number, amount, invoice date, due date, description, etc.).\n\n-Draft a clear and concise billing email using that information.\n\n-Return the final result strictly in the defined JSON schema.\n\n##Tools\n\n-Google Sheets Tool\n\nPurpose: Retrieve invoice information.\n\n**Rules**:\n\n[Always use this tool before drafting the email.\n\n-Extract invoice-related details from the sheet.\n\n-Do not fabricate any data if information is missing.\n\n##Rules\n\n-Google Sheets tool must be used first.\n\n-Do not draft the email until invoice data is retrieved.\n\n-The output must be only JSON following the schema.\n\n-Email must be professional, concise, and structured.\n\n##The email format must be:\n\n-Salutation\n\n-Main content explaining the invoice\n\n-Bullet points summarizing key invoice details\n\n-Closing with:\n\nBest regards,\nOrion Billing Team\n\n##Output Schema\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject_line\": {\n      \"type\": \"string\"\n    },\n    \"email_body\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\"subject_line\", \"email_body\"]\n}\n\n##Extra Information\n\nThe email should be addressed to the other company's billing team and clearly present invoice details such as:\n\n-Invoice Number: VALUE\n\n-Invoice Date: VALUE\n\n-Due Date: VALUE\n\n-Amount: VALUE\n\n-Description: VALUE\n\n-End the email with:\n\nBest regards,\nOrion Billing Team",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1360,
+        0
+      ],
+      "id": "5dbf3f25-82a0-4f64-8214-01741c2837da",
+      "name": "Account Payable Team"
+    },
+    {
+      "parameters": {
+        "sendTo": "aryasurve444@gmail.com",
+        "subject": "={{ $json.output.subject_line }}",
+        "emailType": "text",
+        "message": "={{ $json.output.email_body }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Orion Billing Team"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1744,
+        0
+      ],
+      "id": "5cfa8a46-d4af-48ea-bced-efbbdcecfc30",
+      "name": "Send Invoice Response",
+      "webhookId": "1c7bd463-ac27-479a-bb8b-ea26b65628eb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Get invoice",
+        "height": 288,
+        "width": 480,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -96
+      ],
+      "id": "a6b07550-3f72-4801-9d5d-099210e12a66",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        208
+      ],
+      "id": "2a13986a-40a5-47d5-9236-e2625646a492",
+      "name": "Brian",
+      "credentials": {
+        "openAiApi": {
+          "id": "aJn5jfYsp8jxYfC6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "Company Name",
+              "description": "This is the name of the buyer company.",
+              "required": true
+            },
+            {
+              "name": "Company email",
+              "description": "This is the email of the buyer company",
+              "required": true
+            },
+            {
+              "name": "Customer Name",
+              "description": "This is customer from the company who is the buyer [contact]",
+              "required": true
+            },
+            {
+              "name": "Address",
+              "description": "This is the address of the customer.",
+              "required": true
+            },
+            {
+              "name": "Invoice Number",
+              "description": "This is the number of the invoice."
+            },
+            {
+              "name": "Date",
+              "type": "date",
+              "description": "This is the date of the invoice.",
+              "required": true
+            },
+            {
+              "name": "Status",
+              "description": "This is the status of the payment required.",
+              "required": true
+            },
+            {
+              "name": "Number of items",
+              "type": "number",
+              "description": "this is the number of services/items demanded /purchased by the buyer.",
+              "required": true
+            },
+            {
+              "name": "Total Amount",
+              "type": "number",
+              "description": "This is the total amount of the order.",
+              "required": true
+            },
+            {
+              "name": "items",
+              "description": "Names of items/services demanded by the buyer.",
+              "required": true
+            },
+            {
+              "name": "Payment method",
+              "description": "This is the payment method prefered by the buyer."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        0
+      ],
+      "id": "fa81ed3d-bae1-4b9e-bd7d-50bba9e72584",
+      "name": "Extract Information"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nlABqxLijl7TipbwRNcRQ8AUShAvx890bspvCFKozoQ",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nlABqxLijl7TipbwRNcRQ8AUShAvx890bspvCFKozoQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Invoice Number": "={{ $json.output['Invoice Number'] }}",
+            "Client Name": "={{ $json.output['Customer Name'] }}",
+            "Company Name": "={{ $json.output['Company Name'] }}",
+            "Email": "={{ $json.output['Company email'] }}",
+            "Address": "={{ $json.output.Address }}",
+            "Total Amount": "={{ $json.output['Total Amount'] }}",
+            "Invoice Date": "={{ $json.output.Date }}",
+            "Status": "={{ $json.output.Status }}",
+            "Payment Method": "={{ $json.output['Payment method'] }}",
+            "Number of Items": "={{ $json.output['Number of items'] }}",
+            "Items Demanded": "={{ $json.output.items }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Invoice Number",
+              "displayName": "Invoice Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Amount",
+              "displayName": "Total Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice Date",
+              "displayName": "Invoice Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Method",
+              "displayName": "Payment Method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Number of Items",
+              "displayName": "Number of Items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Items Demanded",
+              "displayName": "Items Demanded",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1072,
+        0
+      ],
+      "id": "dedfaa94-8f7c-4ed4-b5f5-c03f8aaaf598",
+      "name": "Add to Invoice DataBase",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4vitUnlIlkLXRXl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        1312,
+        208
+      ],
+      "id": "7026d01f-0e9e-42d5-b0c8-a7feb589b266",
+      "name": "Email Agent",
+      "credentials": {
+        "anthropicApi": {
+          "id": "PcjtIN6VpJTi0Pmd",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject_line\": {\n      \"type\": \"string\"\n    },\n    \"email_body\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\"subject_line\", \"email_body\"]\n}\n\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1552,
+        208
+      ],
+      "id": "f1d70ee3-f3ba-4424-86bf-505e5833b2ed",
+      "name": "Format Output"
+    },
+    {
+      "parameters": {
+        "content": "## Extract And Analyze Information ",
+        "height": 416,
+        "width": 592,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -96
+      ],
+      "id": "9a8c7a33-77b3-4d32-abb1-a35032a8b539",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Store",
+        "height": 240,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        -80
+      ],
+      "id": "738bc67e-8f5a-4c8a-9805-b3f2c369ab44",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Draft Proffessional Reply Emails'",
+        "height": 496,
+        "width": 368,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        -144
+      ],
+      "id": "2a08d8de-8716-41a5-b1b5-ed91c451ab19",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Send Response",
+        "height": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        -96
+      ],
+      "id": "e0a6bd58-1438-4aee-b2f3-17055cae1ce6",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Invoice Data": {
+      "ai_tool": [
+        [
+          {
+            "node": "Account Payable Team",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoice Uploaded": {
+      "main": [
+        [
+          {
+            "node": "Download Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Invoice": {
+      "main": [
+        [
+          {
+            "node": "Extract Text From Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text From Invoice": {
+      "main": [
+        [
+          {
+            "node": "Extract Information",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Account Payable Team": {
+      "main": [
+        [
+          {
+            "node": "Send Invoice Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brian": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Information",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Information": {
+      "main": [
+        [
+          {
+            "node": "Add to Invoice DataBase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Invoice DataBase": {
+      "main": [
+        [
+          {
+            "node": "Account Payable Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Agent": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Account Payable Team",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Account Payable Team",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e90a4c25-79a4-4fa2-b908-803be436669e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "989074a2911041fc135d491b212a27b4bae72585d15252132315be3ee2c31a3b"
+  },
+  "id": "546CjYPo3Sb2e3KB",
+  "tags": []
+}

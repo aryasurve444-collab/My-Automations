@@ -1,0 +1,960 @@
+{
+  "name": "AI E-Commerce Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        112
+      ],
+      "id": "c9b1c440-2c15-4e48-96d3-1a4e4bce72b7",
+      "name": "Message Received",
+      "webhookId": "9b74969c-7f27-4d45-bfb7-75f8b47d030d",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "UCCMukd3u00RoAgR",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.Message }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Support",
+              "description": "Customer needs help with a previous order, store information, delivery, refund, tracking, or any issue or question related to an existing order or store service.  \n\nExamples:  \n-Where is my order?\n-I want to track my order\n-I didn’t receive my package\n-I want a refund \n-What are your store hours?\n-I need help with my order"
+            },
+            {
+              "category": "Order",
+              "description": "Customer wants to buy a product, place a new order, ask about product price, availability, or purchase process.\n\nExamples:\n-I want to buy this product\n-What is the price?\n-How can I order? \n-Do you have this item in stock? \n-I want to place an order"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are a strict classifier.\n\nClassify the customer message into exactly one category.\n\nCategories:\n1)Order\n2)Support\n\nRules:\n- Return ONLY valid JSON\n- Do NOT return markdown\n- Do NOT use ```json\n- Do NOT return array\n- Return only object\n- No explanation\n\nExample output:\n\n{\n  \"Order\": true,\n  \"Support\": false\n}",
+          "enableAutoFixing": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        112
+      ],
+      "id": "a51c4fcb-630f-4a35-a222-baa87398455a",
+      "name": "Classify Message"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "afc20dc7-c92a-4c46-be1a-81aa3f0b1508",
+              "name": "Message",
+              "value": "={{ $json.messages[0].text.body }}",
+              "type": "string"
+            },
+            {
+              "id": "697c75df-2c85-49e3-80d3-733999cea14b",
+              "name": "Message_ID",
+              "value": "={{ $json.messages[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "d1a01a35-59be-4f7a-bf6f-9f57cbc52989",
+              "name": "Customer_Contact",
+              "value": "={{ $json.messages[0].from }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        112
+      ],
+      "id": "daeb58e7-bc71-41d6-b7fc-0bf8d4d2d47c",
+      "name": "Format Input"
+    },
+    {
+      "parameters": {
+        "content": "## Get Message",
+        "height": 256,
+        "width": 384,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        16
+      ],
+      "id": "da382186-4a29-4cbe-8ebf-87cd0f9bdabf",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Classify Type",
+        "height": 416,
+        "width": 336,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        64
+      ],
+      "id": "d4d512d6-c312-4a5b-ba7d-1badf7c65246",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE",
+          "mode": "list",
+          "cachedResultName": "Stock",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        320
+      ],
+      "id": "71284494-f54a-49d3-a93d-79674f830220",
+      "name": "Get Products",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cNsTq8lOqFAT3xjI",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        832,
+        320
+      ],
+      "id": "2907e551-f349-4eb6-abd4-4fdfad02eb99",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Format Input').item.json.Message }}",
+        "options": {
+          "systemMessage": "=You are a smart and friendly sales assistant for a football store.\n\nYour goal is to help customers find the right product and close the order.\n\nCurrent Date/Time: {{ $now.format('ff') }}\n\n---\n\n📦 AVAILABLE PRODUCTS:\n\n{{ $json.formatted_products }}\n\n---\n\n🛒 YOUR BEHAVIOR:\n\n- Greet the customer warmly\n- Present products clearly and enthusiastically\n- Highlight availability and pricing\n- Always try to guide the customer toward placing an order\n- If a customer shows interest, ask for the product name and quantity\n- Do not let the conversation die — always end with a question or call to action\n\n---\n\n✅ WHEN A CUSTOMER PLACES AN ORDER:\n\nFollow these steps strictly:\n\n1. Use **Get Row** tool to fetch all products from the sheet\n2. Find the matching product by name\n3. Check if stock is sufficient for the requested quantity\n4. If stock is NOT enough → inform the customer politely and suggest an alternative quantity\n5. If stock IS enough:\n   - Calculate: new stock = current stock - ordered quantity\n   - Use **Delete** tool to remove the old product row\n   - Use **Add** tool to insert a new row with the same Product Name and Price, but updated Stock\n6. Confirm the order to the customer with product name, quantity, and price\n\n---\n\n❌ STRICT RULES:\n\n- Never change the Product Name or Price\n- Never add a row without deleting the old one first\n- Never update stock if quantity is insufficient\n- Never skip confirmation after a successful order"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1536,
+        320
+      ],
+      "id": "10e6d971-a1eb-4117-885b-813e08746b99",
+      "name": "Agent"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE",
+          "mode": "list",
+          "cachedResultName": "Stock",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1536,
+        544
+      ],
+      "id": "3b89b8ad-215c-44cb-86b1-0b569ba8d0b5",
+      "name": "Get Row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cNsTq8lOqFAT3xjI",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE",
+          "mode": "list",
+          "cachedResultName": "Stock",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Price": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Price', ``, 'string') }}",
+            "Stock": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Stock', ``, 'string') }}",
+            "Product Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Product_Name', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Product Name",
+              "displayName": "Product Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Stock",
+              "displayName": "Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1664,
+        544
+      ],
+      "id": "cf6fcc80-540f-4b45-b898-c5c9d4d2198e",
+      "name": "Add",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cNsTq8lOqFAT3xjI",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE",
+          "mode": "list",
+          "cachedResultName": "Stock",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit#gid=0"
+        },
+        "startIndex": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Row_Number', ``, 'number') }}",
+        "numberToDelete": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Number_of_Rows_to_Delete', ``, 'number') }}"
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1792,
+        544
+      ],
+      "id": "04d83054-f405-49be-9509-125d1f097e45",
+      "name": "Delete",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cNsTq8lOqFAT3xjI",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1280,
+        544
+      ],
+      "id": "79e4beba-2a27-40e6-ac0c-45bf4e25a69c",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "8t4e1SN6QsKeP3p6",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Format Input').item.json.Message_ID }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1408,
+        544
+      ],
+      "id": "ad314fb7-3643-47c8-a85c-d377511a9b99",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.first().json.data;\n\nconst formatted = items.map((item, index) => {\n  return `Product ${index + 1}:\\n\\nName: ${item['Product Name']}\\nPrice: ${item['Price']}\\nStock: ${item['Stock']}`;\n}).join('\\n\\n');\n\nreturn [{ json: { formatted_products: formatted } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        320
+      ],
+      "id": "c50b6005-6a9e-4c13-920a-22f56aca8944",
+      "name": "Format"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        336
+      ],
+      "id": "a34b887c-734f-441e-99b1-0e2fbc651203",
+      "name": "Classifier",
+      "credentials": {
+        "openAiApi": {
+          "id": "8t4e1SN6QsKeP3p6",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1472,
+        32
+      ],
+      "id": "49132636-b46f-4b04-9049-a279539ae0be",
+      "name": "Brain",
+      "credentials": {
+        "openAiApi": {
+          "id": "8t4e1SN6QsKeP3p6",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hello!",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1536,
+        -192
+      ],
+      "id": "bb146008-c5b0-42ce-8a48-41ed054e7641",
+      "name": "Support Agent"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE",
+          "mode": "list",
+          "cachedResultName": "Stock",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1920,
+        544
+      ],
+      "id": "a62dbd1c-d7e6-4e5c-b050-2569aedb9676",
+      "name": "Add Order Details",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cNsTq8lOqFAT3xjI",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE",
+          "mode": "list",
+          "cachedResultName": "Stock",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDD_YtdMPKyGdVBdROSq2IAazbzg_syR6E49GR57QgE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1728,
+        32
+      ],
+      "id": "57c11f61-e7a7-4baf-ab67-9bcbb53148f4",
+      "name": "Get Orders",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cNsTq8lOqFAT3xjI",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "oSzPLXeQXNb1CCgW",
+          "mode": "list",
+          "cachedResultName": "Customer Queries",
+          "cachedResultUrl": "/projects/aBNjbKSrNAZLzlFX/datatables/oSzPLXeQXNb1CCgW"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Reply": "={{ $json.Reply }}",
+            "Query": "={{ $json.Query }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Query",
+              "displayName": "Query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reply",
+              "displayName": "Reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2352,
+        -48
+      ],
+      "id": "40d5907c-c32a-4ab7-9a7b-9f084472060b",
+      "name": "Add to Database[Chat]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Format Input').item.json.Message_ID }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1600,
+        32
+      ],
+      "id": "d47ed977-29be-47ad-994d-0f4d4413b264",
+      "name": "Chat_Memory"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f3013de0-8aae-4751-a999-d9888d53198f",
+              "name": "Reply",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "f9535e57-a972-44c6-9ed0-b8586210c8a1",
+              "name": "Query",
+              "value": "={{ $('Format Input').item.json.Message }}",
+              "type": "string"
+            },
+            {
+              "id": "c253e645-d045-4dbb-be7c-2cbca7601d4d",
+              "name": "Reply",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2128,
+        -48
+      ],
+      "id": "19c9d447-574a-418b-a825-74abd22caa4c",
+      "name": "Edit Inputs"
+    },
+    {
+      "parameters": {
+        "content": "## Support Agent",
+        "height": 432,
+        "width": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        -256
+      ],
+      "id": "6dd865ac-34bb-4ea4-becb-147fbcf7fc76",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Get Products Data",
+        "height": 240,
+        "width": 624,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        576,
+        240
+      ],
+      "id": "4a1d6bb7-f274-4bbe-a84f-d66e4212dfe0",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Order Agent",
+        "height": 384,
+        "width": 784,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        304
+      ],
+      "id": "0324a98d-ecc6-48cb-809e-7a9c0e43ccf5",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Add to DataBase",
+        "height": 208,
+        "width": 544,
+        "color": "#C99422"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        -96
+      ],
+      "id": "0ec01cfb-11cb-4b2c-9e82-07454592e554",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1098978463292081",
+        "recipientPhoneNumber": "={{ $('Format Input').item.json.Customer_Contact }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2128,
+        272
+      ],
+      "id": "a7e7c7dc-b406-4512-a016-b918d1f3795d",
+      "name": "Reply",
+      "webhookId": "84190b2b-bcbb-4a64-88c0-74849e57d7a1",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "4dgVjkLELs0blxWI",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Reply",
+        "height": 240,
+        "color": "#234C9F"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        192
+      ],
+      "id": "ca2fb81f-ce0a-4aa9-8a26-263188220937",
+      "name": "Sticky Note6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Message Received": {
+      "main": [
+        [
+          {
+            "node": "Format Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Input": {
+      "main": [
+        [
+          {
+            "node": "Classify Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Message": {
+      "main": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Products": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Row": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifier": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify Message",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Order Details": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Orders": {
+      "ai_tool": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Support Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Inputs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Inputs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat_Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Inputs": {
+      "main": [
+        [
+          {
+            "node": "Add to Database[Chat]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "449df159-b11c-44a1-96d4-12c6f5b075c1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5212abdf2fff3a06bdad9ed3d79ab26a5c5b188b969b1cba736d31395c211a9f"
+  },
+  "id": "s42NPomgN0oiqxbJ",
+  "tags": []
+}

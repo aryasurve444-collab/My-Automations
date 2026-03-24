@@ -1,0 +1,782 @@
+{
+  "name": "LinkedIn Leads",
+  "nodes": [
+    {
+      "parameters": {
+        "batchSize": 20,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1568,
+        -1424
+      ],
+      "id": "3fad3a42-b8fb-452b-96a6-6e389f6a9165",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5085c639-ce3b-43e9-a6b7-f366821a81b2",
+              "name": "Target Audience",
+              "value": "={{ $json['Describe Your Target Audience'] }}",
+              "type": "string"
+            },
+            {
+              "id": "684fa3f8-7e89-41bd-b9b9-1fb234eb6bbc",
+              "name": "Timestamp",
+              "value": "={{ $now.format('ff') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        -1424
+      ],
+      "id": "e1e32691-200b-49e9-b355-b77246c0842c",
+      "name": "Edit Input"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the target audience description:\n\n{{ $json['Target Audience'] }}\n\nBuild the Apollo.io search URL based on this description and return only the JSON object.\n\nAND ALSO Extract - 'EmploymentRange' AND  'Country'From Target Audience.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=#Oveview\n\nYou are an Apollo.io URL Builder Agent. Your sole job is to convert a plain English audience description into a single, valid Apollo.io people search URL and return it as a JSON object.\nYou have expert knowledge of Apollo.io's URL structure and query parameters. You never ask follow-up questions. You always make smart assumptions based on the input and build the best possible search URL.\nThe target audience description will be provided by the user in the prompt. Read it carefully and build the Apollo.io search URL accordingly.\nCurrent Date/Time: {{ $now.format('ff') }}\n---\n## Instructions\n1. Read the user's plain English audience description carefully.\n2. Extract the following targeting signals from the description:\n   - Job titles / roles\n   - Location(s)\n   - Company size (employee range)\n   - Industry or keywords\n3. Map each extracted signal to the correct Apollo URL parameter.\n4. Construct a single valid Apollo.io search URL using all extracted parameters.\n5. Also extract and return:\n   - EmploymentRange: pick the closest matching label from the fixed list below.\n   - Country: the primary country or region targeted (e.g. \"United States\", \"United Kingdom\"). If multiple countries are present, return the first/primary one.\n6. Return only the JSON object — nothing else.\n---\n## Parameter Mapping Rules\n\n### personTitles[]\n- Extract all job titles, roles, or seniority mentions from the description.\n- Normalize to common Apollo-style titles (e.g. \"CEO\", \"Founder\", \"Head of Marketing\", \"VP of Sales\").\n- Include variations where relevant (e.g. if user says \"founders\", include \"founder\", \"co-founder\", \"ceo\").\n- Each title is a separate personTitles[]= entry.\n- URL encode spaces as %20.\n\n### personLocations[]\n- Extract country, city, region, or continent.\n- Normalize to full names (e.g. \"US\" → \"United States\", \"UK\" → \"United Kingdom\").\n- If multiple locations mentioned, add multiple personLocations[]= entries.\n- URL encode spaces as %20.\n\n### organizationNumEmployeesRanges[]\n- Map company size mentions to Apollo's range format: min%2Cmax\n- Use these standard ranges:\n  - 1–10 → 1%2C10\n  - 11–20 → 11%2C20\n  - 21–50 → 21%2C50\n  - 51–100 → 51%2C100\n  - 101–200 → 101%2C200\n  - 201–500 → 201%2C500\n  - 501–1000 → 501%2C1000\n  - 1001–2000 → 1001%2C2000\n  - 5001–10000 → 5001%2C10000\n  - 10001+ → 10001%2C99999\n  - Not mentioned → omit this parameter entirely\n- If a specific number or vague size is given, pick the closest matching range above.\n\n### qKeywords\n- Extract the core industry, niche, or service type.\n- Use 1–3 words max.\n- URL encode spaces as %20.\n- If no clear keyword, omit this parameter.\n\n### sortAscending\n- Always set to false.\n\n### page\n- Always set to 1.\n---\n## EmploymentRange Values (FIXED LIST — always pick the closest match)\nYou MUST return one of the following exact strings for EmploymentRange.\nNever invent a new value. If the input doesn't map perfectly, pick the nearest one.\n\n  \"Unknown\"\n  \"1-10\"\n  \"11-20\"\n  \"21-50\"\n  \"51-100\"\n  \"101-200\"\n  \"201-500\"\n  \"501-1000\"\n  \"1001-2000\"\n  \"5001-10000\"\n  \"10001+\"\n\n- If company size is not mentioned at all → \"Unknown\"\n- If a number falls between two ranges, pick the range whose midpoint is closest.\n- Examples:\n  - \"under 50 employees\" → \"21-50\"\n  - \"around 300 people\" → \"201-500\"\n  - \"large enterprise\" → \"5001-10000\"\n  - \"startup\" → \"1-10\"\n  - \"small team\" → \"11-20\"\n---\n## Null Rules\n- If a value cannot be extracted or inferred from the description, set that field to null.\n- This applies to: EmploymentRange (use \"Unknown\" instead of null), Country, and qKeywords inside the URL.\n- Country should be null if no location is mentioned at all.\n- Never use empty string \"\" — always use null for missing values.\n---\n## Rules\n- NEVER return anything except the JSON object.\n- NEVER add explanations, notes, preamble, or markdown formatting around the JSON.\n- NEVER leave any parameter empty — if a value cannot be extracted, omit that parameter from the URL entirely rather than leaving it blank.\n- ALWAYS URL encode spaces as %20 and commas as %2C.\n- ALWAYS include at least personTitles[] and page=1 in every URL.\n- ALWAYS include EmploymentRange and Country in the output JSON (Country can be null, EmploymentRange defaults to \"Unknown\").\n- If the description is vague, make the best reasonable assumption — do not ask for clarification.\n- If multiple interpretations exist, pick the most common/likely one for a B2B audience.\n- The base URL must always be: https://app.apollo.io/#/people?\n---\n## Output Format\nReturn only this exact JSON structure:\n{\n  \"searchURL\": \"https://app.apollo.io/#/people?personTitles[]=...&...\",\n  \"EmploymentRange\": \"...\",\n  \"Country\": \"...\"\n}\n---\n## Examples\n\nInput:\n\"SaaS founders and CEOs in the US with teams under 50 people\"\nOutput:\n{\n  \"searchURL\": \"https://app.apollo.io/#/people?personTitles[]=founder&personTitles[]=co-founder&personTitles[]=ceo&personLocations[]=United%20States&organizationNumEmployeesRanges[]=21%2C50&qKeywords=saas&sortAscending=false&page=1\",\n  \"EmploymentRange\": \"21-50\",\n  \"Country\": \"United States\"\n}\n\n---\nInput:\n\"HR managers and people ops leads in the UK and Canada from mid-size companies\"\nOutput:\n{\n  \"searchURL\": \"https://app.apollo.io/#/people?personTitles[]=HR%20Manager&personTitles[]=People%20Operations%20Lead&personTitles[]=Head%20of%20HR&personLocations[]=United%20Kingdom&personLocations[]=Canada&organizationNumEmployeesRanges[]=101%2C200&qKeywords=human%20resources&sortAscending=false&page=1\",\n  \"EmploymentRange\": \"101-200\",\n  \"Country\": \"United Kingdom\"\n}\n\n---\nInput:\n\"Marketing directors at any company\"\nOutput:\n{\n  \"searchURL\": \"https://app.apollo.io/#/people?personTitles[]=Marketing%20Director&personTitles[]=Director%20of%20Marketing&sortAscending=false&page=1\",\n  \"EmploymentRange\": \"Unknown\",\n  \"Country\": null\n}"
+            },
+            {
+              "type": "AIMessagePromptTemplate",
+              "message": "=You are a precise URL generation agent. You take plain English input and return only valid JSON. No conversation. No explanation. Output only."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        544,
+        -1424
+      ],
+      "id": "6c5c9435-dd99-4c57-811f-3d5d38d7b878",
+      "name": "Form URL"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"searchURL\": {\n      \"type\": \"string\"\n    },\n    \"EmploymentRange\": {\n      \"type\": \"string\"\n    },\n    \"Country\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\"searchURL\", \"EmploymentRange\", \"Country\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        -1232
+      ],
+      "id": "e348a477-a437-4d60-8b90-4d1b4a739511",
+      "name": "Format"
+    },
+    {
+      "parameters": {
+        "amount": 2.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        -1424
+      ],
+      "id": "356128df-6b38-488f-9178-00c2fd159ce8",
+      "name": "Wait",
+      "webhookId": "7da6271b-deca-4ba2-b2d4-29104687cfb2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Below is a batch of prospect profiles. Fields: Name, Position, Org Name, Org Industry, Seniority, City, Country, Functional. Process every profile in order.\n\n{{ $json.Leads }}\n\nOutput must be a raw JSON array. Start with [ and end with ]. No text before. No text after. No markdown. No explanation.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=# Role\nB2B LinkedIn outreach — personalized connection requests. Never pitch, never sell. Sharp peer energy only.\n\nCurrent Date/Time: {{ $now.format('ff') }}\n\n## Voice\nWriting as Arya Surve — freelance AI automation specialist, India.\nDirect, sharp, no fluff. Peer to peer. Never mention automation, AI, or what Arya does.\n\n## Signal Hierarchy\n1. Position + Org Name\n2. Position + Org Industry\n3. Position only\n4. Org Industry + Seniority\n5. Seniority + Country\n6. Functional only\n7. All null → warm human generic\n\n## Message Format\nGreeting: First name only\n\nPara 1: One specific observation — title, company, or work. No explaining their job back to them.\nPara 2: Short, intentional pull — why connect. No agenda.\n\nClose: Warm regards, Arya\n\n### Tone by Seniority\n- founder/ceo/owner → grounded, operational peer\n- vp/director/head → senior peer, acknowledge scope\n- manager/lead/specialist → practitioner to practitioner\n- unknown → warm, professional\n\n## Example\n\nHey Vikram,\n\nBuilding an EdTech product in India at the founder stage — there's a lot happening right now and not many people navigating it the way you are.\n\nWould be good to have someone like you in my network.\n\nWarm regards, Arya\n\n## Banned Phrases\n\"can't be easy\" / \"isn't easy\" / \"I came across\" / \"I noticed\" / \"I wanted to reach out\" / \"I'd love to connect\" / \"Hope this finds you well\" / \"Impressive background\" / \"Great profile\" / \"share perspectives\" / \"collaborate\" / \"crowded market\" / \"standing out\" / \"the X space\""
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2016,
+        -1424
+      ],
+      "id": "d5247872-c850-40da-8c0f-53caaac62407",
+      "name": "Form Connection Message"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1lals_lg1yJP5ln3rYc5dROMGd9bjs_JWRWd46C5XF7Y",
+          "mode": "list",
+          "cachedResultName": "Connection Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lals_lg1yJP5ln3rYc5dROMGd9bjs_JWRWd46C5XF7Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lals_lg1yJP5ln3rYc5dROMGd9bjs_JWRWd46C5XF7Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "SR. No.": "={{ $json.profileIndex }}",
+            "LinkedIn URL": "={{ $json.linkedinUrl }}",
+            "First Name ": "={{ $json.fullName.split(' ').first() }}",
+            "Last Name": "={{ $json.fullName.split(' ').last() }}",
+            "Email": "={{ $json.email }}",
+            "Connection Message": "={{ $json.connectionMessage }}",
+            "Functional": "={{ $json.functional ? (s => s.charAt(0).toUpperCase() + s.slice(1))(JSON.parse($json.functional.replace(/'/g, '\"'))[0]) : '-' }}",
+            "Organisation Description": "={{ $json.orgDescription }}",
+            "Industry": "={{ (s => s.charAt(0).toUpperCase() + s.slice(1))(JSON.parse($json.orgIndustry.replace(/'/g, '\"'))[0]) }}",
+            "Organisation": "={{ $json.orgName }}",
+            "Organisation URL": "={{ $json.orgWebsite }}",
+            "Location[State]": "={{ $json.state }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "SR. No.",
+              "displayName": "SR. No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "First Name ",
+              "displayName": "First Name ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Organisation",
+              "displayName": "Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Organisation URL",
+              "displayName": "Organisation URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Organisation Description",
+              "displayName": "Organisation Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Location[State]",
+              "displayName": "Location[State]",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Functional",
+              "displayName": "Functional",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Connection Message",
+              "displayName": "Connection Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2816,
+        -1200
+      ],
+      "id": "5e208c86-3066-4c66-a7ce-557fb1c32c97",
+      "name": "Add to Database",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4vitUnlIlkLXRXl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "actorId": {
+          "__rl": true,
+          "value": "kVYdvNOefemtiDXO5",
+          "mode": "list",
+          "cachedResultName": "🎉Leads Scraper ✅ $1/1k Leads ✅ 50K/Run With EMAILS✅Like Apollo (pipelinelabs/lead-scraper-apollo-zoominfo-lusha-ppe)",
+          "cachedResultUrl": "https://console.apify.com/actors/kVYdvNOefemtiDXO5/input"
+        },
+        "customBody": "={\n    \"companyEmployeeSizeIncludes\": [\n        \"{{ $json.output.EmploymentRange }}\"\n    ],    \n    \"companyLocationCountryIncludes\": [\n        \"{{ $json.output.Country }}\"\n    ],\n    \"hasEmail\": true,\n    \"contact_email_exclude_catch_all\": true,\n    \"contact_email_status_v2_verified\": true,\n    \"include_email\": true,\n    \"max_results\": 100,\n    \"url\": \"{{ $json.output.searchURL }}\"\n}",
+        "timeout": 86400,
+        "memory": 512,
+        "build": "latest"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -1424
+      ],
+      "id": "e4429c71-5317-419f-919d-80884785dd89",
+      "name": "Scrape Information",
+      "credentials": {
+        "apifyApi": {
+          "id": "8UKJuAWd42hrNtCx",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Datasets",
+        "datasetId": "={{ $('Scrape Information').item.json.defaultDatasetId }}",
+        "offset": {},
+        "limit": 500,
+        "options": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        -1424
+      ],
+      "id": "bd3d98e4-54ba-4d24-9d87-1efc73846b81",
+      "name": "Get Collected Information",
+      "credentials": {
+        "apifyApi": {
+          "id": "8UKJuAWd42hrNtCx",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "LinkedIn Lead Scraper — Target Setup",
+        "formDescription": "Fill in your target criteria and we'll automatically scrape matching LinkedIn leads and save them to your Google Sheet.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Describe Your Target Audience",
+              "placeholder": "Company type , Location  Etc...",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "🚀 Start Scraping!",
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "=🔍 Searching LinkedIn now... Your leads will be ready in your Google Sheet soon!"
+            }
+          },
+          "ignoreBots": true,
+          "useWorkflowTimezone": true,
+          "customCss": ":root {\n\t/* Page Background */\n\t--color-background: #13111a;\n\t/* Main Form Card */\n\t--color-card-bg: #1e1a2e;\n\t--color-card-border: #2e2a45;\n\t--color-card-shadow: rgba(0, 0, 0, 0.50);\n\t/* Button */\n\t--color-submit-btn-bg: #f5a623;\n\t--color-submit-btn-text: #13111a;\n\t/* Text */\n\t--color-header: #f0ecff;\n\t--color-label: #c4bfe0;\n\t--color-header-subtext: #8a84a8;\n\t/* Inputs */\n\t--color-input-border: #2e2a45;\n\t--color-input-text: #d8d3f0;\n\t--color-focus-border: #f5a623;\n\t/* Card Style */\n\t--border-radius-card: 18px;\n\t--border-radius-input: 10px;\n\t/* Layout */\n\t--padding-container-top: 44px;\n\t--container-width: 520px;\n\t/* Shadow */\n\t--box-shadow-card: 0px 24px 60px rgba(0, 0, 0, 0.55);\n}"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        96,
+        -1520
+      ],
+      "id": "8ff33ddb-9ddc-4261-a79c-bab92e0f6f85",
+      "name": "Request Response",
+      "webhookId": "d939a739-7be4-4035-a7e0-c76c82954680"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nlet formattedText = '';\n\nitems.forEach((item, index) => {\n  const d = item.json;\n\n  const val = (v) => {\n    if (v === null || v === undefined || v === '') return 'null';\n    if (Array.isArray(v)) return v.length > 0 ? v.join(', ') : 'null';\n    return String(v).trim();\n  };\n\n  formattedText += `Profile ${index + 1}:\\n`;\n  formattedText += `City: ${val(d.city)}\\n`;\n  formattedText += `Country: ${val(d.country)}\\n`;\n  formattedText += `Full Name: ${val(d.fullName)}\\n`;\n  formattedText += `Functional: ${val(d.functional)}\\n`;\n  formattedText += `LinkedIn URL: ${val(d.linkedinUrl)}\\n`;\n  formattedText += `Org City: ${val(d.orgCity)}\\n`;\n  formattedText += `Org Industry: ${val(d.orgIndustry)}\\n`;\n  formattedText += `Org Name: ${val(d.orgName)}\\n`;\n  formattedText += `Org Size: ${val(d.orgSize)}\\n`;\n  formattedText += `Org State: ${val(d.orgState)}\\n`;\n  formattedText += `Org Website: ${val(d.orgWebsite)}\\n`;\n  formattedText += `Phone: ${val(d.phone)}\\n`;\n  formattedText += `Position: ${val(d.position)}\\n`;\n  formattedText += `Seniority: ${val(d.seniority)}\\n`;\n  formattedText += `-----------------------\\n`;\n});\n\nreturn [{ json: { Leads: formattedText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        -1424
+      ],
+      "id": "7e197cce-39ba-49f3-a48c-2f20474b5743",
+      "name": "Collective Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.text;\nconst inputItems = $input.all();\nconst start = raw.indexOf('[');\nconst end = raw.lastIndexOf(']');\nconst profiles = JSON.parse(raw.substring(start, end + 1));\nconst leadsText = $('Collective Data').first().json.Leads;\nconst linkedinUrls = [...leadsText.matchAll(/LinkedIn URL:\\s*(https?:\\/\\/\\S+)/g)].map(m => m[1]);\nconst fullNames = [...leadsText.matchAll(/Full Name:\\s*(.+)/g)].map(m => m[1].trim());\nconst results = [];\nfor (let i = 0; i < profiles.length; i++) {\n  results.push({\n    json: {\n      profileIndex: i + 1,\n      fullName: fullNames[i] ?? null,\n      linkedinUrl: linkedinUrls[i] ?? null,\n      connectionMessage: profiles[i][\"message\"]\n    }\n  });\n}\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2368,
+        -1424
+      ],
+      "id": "6373e7b7-9136-4053-98b4-19f15a4a200f",
+      "name": "Format Collective Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItems = $input.all();\nconst datasetItems = $('Get Collected Information').all();\n\nconst capitalize = (s) => (s && s !== 'null') ? s[0].toUpperCase() + s.slice(1) : null;\n\nreturn inputItems.map((item, i) => {\n  const d = datasetItems[i].json;\n\n  return {\n    json: {\n      ...item.json,\n      functional:     capitalize(d.functional),\n      orgName:        d.orgName ?? null,\n      orgIndustry:    capitalize(d.orgIndustry),\n      state:          d.state ?? null,\n      orgWebsite:     d.orgWebsite ?? null,\n      orgDescription: d.orgDescription ?? null,\n      email:          d.email ?? null,\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        -1424
+      ],
+      "id": "d61a18bd-ca45-4481-b724-86dc5c8be9c1",
+      "name": "Edit Ouput Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "aryasurve444@gmail.com",
+        "subject": "Hey Arya , Your Request is Received !",
+        "message": "=<h3>Hey Arya,</h3>\n<h4><big><em>Your Request for Scraping Information about profiles on {{ $json['Describe Your Target Audience'] }} at {{ $now.format('ff') }} is Succesfully Collected.<br><br>\n\nKeep Connecting to people!</em></big></h4>\n<h3>Best,<br>\nArya</h3>\n\n",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "LinkedIn Leads Team"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        -1616
+      ],
+      "id": "3d35eb23-a0a4-44f6-a338-59a3914f35b5",
+      "name": "Send Confirmation",
+      "webhookId": "b83777f1-3076-443d-a764-705f22e0223e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "aryasurve444@gmail.com",
+        "subject": "Hey Arya , Your leads are Collected!",
+        "message": "<h3>Hey Arya,</h3>\n<h4>Your Leads</h4>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1792,
+        -1616
+      ],
+      "id": "197057bc-4f36-4152-9bbe-637456350533",
+      "name": "Leads Collected",
+      "webhookId": "5517fbe2-7a3c-47c2-be5b-b96901b2b8dc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        -1248
+      ],
+      "id": "2943c6e3-eee0-46da-866f-58cabe120001",
+      "name": "Brain",
+      "credentials": {
+        "anthropicApi": {
+          "id": "PcjtIN6VpJTi0Pmd",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        2016,
+        -1280
+      ],
+      "id": "c56592fe-8e86-458a-9bab-a86ff69e1df7",
+      "name": "Post Writer",
+      "credentials": {
+        "anthropicApi": {
+          "id": "PcjtIN6VpJTi0Pmd",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Get Request And Confirm",
+        "height": 560,
+        "width": 416,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -1776
+      ],
+      "id": "57ecba4e-8772-48a3-8667-3494434f9b58",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Get Information About Specific Sector",
+        "height": 480,
+        "width": 944,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -1584
+      ],
+      "id": "d413813b-ef74-4758-85b1-fc42e33cb6c8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Write Connection Messages  And Add to Database",
+        "height": 832,
+        "width": 1280,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        -1792
+      ],
+      "id": "892da48e-74b2-45c9-b205-c080199c5be0",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Split",
+        "height": 560,
+        "width": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        -1584
+      ],
+      "id": "9fe4f8bb-2098-48d8-becc-1bb8be9bd24b",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Leads Collected",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Collective Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Input": {
+      "main": [
+        [
+          {
+            "node": "Form URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form URL": {
+      "main": [
+        [
+          {
+            "node": "Scrape Information",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Form URL",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Collected Information",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Connection Message": {
+      "main": [
+        [
+          {
+            "node": "Format Collective Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Database": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Information": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Collected Information": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Response": {
+      "main": [
+        [
+          {
+            "node": "Edit Input",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collective Data": {
+      "main": [
+        [
+          {
+            "node": "Form Connection Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Collective Data": {
+      "main": [
+        [
+          {
+            "node": "Edit Ouput Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Ouput Fields": {
+      "main": [
+        [
+          {
+            "node": "Add to Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Form URL",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Writer": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Form Connection Message",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "795fdb4b-3e54-4208-98a0-08737203d9dd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "989074a2911041fc135d491b212a27b4bae72585d15252132315be3ee2c31a3b"
+  },
+  "id": "G60ach2yXyoRzwug",
+  "tags": []
+}

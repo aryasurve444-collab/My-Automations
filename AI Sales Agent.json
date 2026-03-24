@@ -1,0 +1,888 @@
+{
+  "name": "AI Sales Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1gAraNrfmu9NRH77Bhz-ThEHKF9-2jdAfanLSxZ9oK4A",
+          "mode": "list",
+          "cachedResultName": "Intake CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gAraNrfmu9NRH77Bhz-ThEHKF9-2jdAfanLSxZ9oK4A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gAraNrfmu9NRH77Bhz-ThEHKF9-2jdAfanLSxZ9oK4A/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "First Name": "={{ $json['First Name'] }}",
+            "Last Name": "={{ $json['Last Name'] }}",
+            "Email": "={{ $('Intake Submitted').item.json['Email:'] }}",
+            "Company Name": "={{ $('Intake Submitted').item.json['Company Name:'] }}",
+            "Budget": "={{ $('Intake Submitted').item.json.Budget }}",
+            "Project Description": "={{ $('Intake Submitted').item.json['Project Description'] }}",
+            "Timeline": "={{ $('Intake Submitted').item.json.Timeline }}",
+            "Date Submitted": "={{ $json.Date }}"
+          },
+          "matchingColumns": [
+            "First Name"
+          ],
+          "schema": [
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timeline",
+              "displayName": "Timeline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Project Description",
+              "displayName": "Project Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date Submitted",
+              "displayName": "Date Submitted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -496,
+        -448
+      ],
+      "id": "ee17c13c-d0cc-4533-8148-35b598e71fad",
+      "name": "Add to CRM",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4vitUnlIlkLXRXl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Intake Form",
+        "formDescription": "We will get back to you as soon as possible.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "placeholder": "e.g. James Cooper",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email:",
+              "placeholder": "youremail@gmail.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Company Name:",
+              "placeholder": "e.g. Google",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Budget",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "<$1000"
+                  },
+                  {
+                    "option": "$1000-$3000"
+                  },
+                  {
+                    "option": "$3000-$5000"
+                  },
+                  {
+                    "option": "$5000+"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Project Description",
+              "placeholder": "We want a system that...",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Timeline",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "WIthin 1 week"
+                  },
+                  {
+                    "option": "1 week - 3 weeks"
+                  },
+                  {
+                    "option": "3 weeks+"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Intent",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Lead Generation"
+                  },
+                  {
+                    "option": "Content Creation"
+                  },
+                  {
+                    "option": "General Automation Support"
+                  },
+                  {
+                    "option": "OnBoarding Automation"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Submit Intake",
+          "ignoreBots": true,
+          "customCss": ":root {\n\n/* Typography */\n\n--font-family: 'Inter', 'Open Sans', sans-serif;\n--font-weight-normal: 400;\n--font-weight-bold: 600;\n\n--font-size-body: 15px;\n--font-size-label: 14px;\n--font-size-input: 15px;\n--font-size-header: 26px;\n--font-size-subheader: 16px;\n\n/* Background */\n\n--color-background: #0f172a;\n\n/* Card */\n\n--color-card-bg: #ffffff;\n--color-card-border: #e5e7eb;\n--box-shadow-card: 0 15px 40px rgba(0,0,0,0.2);\n\n/* Headers */\n\n--color-header: #111827;\n--color-header-subtext: #6b7280;\n\n/* Labels */\n\n--color-label: #374151;\n\n/* Inputs */\n\n--color-input-border: #d1d5db;\n--color-input-text: #111827;\n--color-focus-border: #6366f1;\n\n/* Button */\n\n--color-submit-btn-bg: #6366f1;\n--color-submit-btn-text: #ffffff;\n\n/* Links */\n\n--color-link: #6366f1;\n\n/* Errors */\n\n--color-error: #ef4444;\n--color-required: #ef4444;\n\n/* Border Radius */\n\n--border-radius-card: 16px;\n--border-radius-input: 10px;\n\n/* Layout */\n\n--padding-container-top: 60px;\n--padding-card: 36px;\n--container-width: 560px;\n\n/* Button */\n\n--submit-btn-height: 54px;\n\n}"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -944,
+        -448
+      ],
+      "id": "f0dca7e5-c872-48a1-9db2-d7980d029e6c",
+      "name": "Intake Submitted",
+      "webhookId": "14314ef9-d57e-4599-b05a-187831f49bcd"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Subject\": {\n      \"type\": \"string\",\n      \"description\": \"The subject line of the email\"\n    },\n    \"Email_Body\": {\n      \"type\": \"string\",\n      \"description\": \"The full body content of the email\"\n    }\n  },\n  \"required\": [\n    \"Subject\",\n    \"Email_Body\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        -224
+      ],
+      "id": "9e62296b-149d-4323-bd41-9f6b5eef8ef2",
+      "name": "Output Format"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de1d2e93-e7dc-4704-9070-6bb0b18d556a",
+              "name": "Email Subject",
+              "value": "={{ $json.output.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "ca04fe06-0978-4f0b-8bbd-b6c77b6b6020",
+              "name": "Email Body",
+              "value": "={{ $json.output.Email_Body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        -448
+      ],
+      "id": "c0fbe8e0-2259-4250-8fe2-abbf30eb6da3",
+      "name": "Format Output Schema"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "aryasurve444@gmail.com",
+        "subject": "=ACTION REQUIRED : New lead with Budget of {{ $('Add to CRM').item.json.Budget }} !",
+        "message": "=Hey Arya,\n\nWe have a new lead form submission: Please revise and give feedback on the copy.\n\n<h2>Project Description:</h2>\n\n{{ $('Add to CRM').item.json['Project Description'] }}.\n<h2>Email</h2>\n{{ $json['Email Body'] }}.\n<h2>Subject Line</h2>\n{{ $json['Email Subject'] }}\n\nPlease provide feedback to the email.",
+        "responseType": "freeText",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        -576
+      ],
+      "id": "a9bb2826-aa90-4317-8379-4f883d5fa246",
+      "name": "Human in the loop",
+      "webhookId": "ca4f2285-ccf9-4312-a307-7c0c9bc8fff7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Add to CRM').item.json.Email }}",
+        "subject": "={{ $('Format Output Schema').item.json['Email Subject'] }}",
+        "message": "={{ $('Format Output Schema').item.json['Email Body'] }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "AS Solutions"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1104,
+        -592
+      ],
+      "id": "b6229fd6-51cf-4512-8f94-d6e5a3d8e877",
+      "name": "Send Intake Reply",
+      "webhookId": "e560e222-5a91-4cd2-9c4a-2efca6c8285c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1e27fac-40d1-4dae-8fba-68f826d9a984",
+              "name": "First Name",
+              "value": "={{ $json[\"Full Name\"].split(' ')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "515dbda6-5eba-44d5-a3ad-f5a6d7e30cb0",
+              "name": "Last Name",
+              "value": "={{ $json[\"Full Name\"].split(' ').slice(1).join(' ') }}",
+              "type": "string"
+            },
+            {
+              "id": "5dd30fb3-23af-463c-a19e-95ce332c55b5",
+              "name": "Date",
+              "value": "={{ $json.submittedAt.toDateTime().format('ff') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        -448
+      ],
+      "id": "6ca91c4e-3bbf-46ae-b49f-8a915357d32a",
+      "name": "Format Intake Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the new lead intake information:\n\nFirst Name: {{ $json['First Name'] }}\nLast Name: {{ $json['Last Name'] }}\nEmail: {{ $json.Email }}\nCompany Name: {{ $json['Company Name'] }}\nBudget: {{ $json.Budget }}\nProject Description: {{ $json['Project Description'] }}\nTimeline: {{ $json.Timeline }}\nDate Submittted: {{ $json['Date Submitted'] }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=#Overview\nYou are an expert sales person for an agency thet delivers AI solutions. Your job is to respond to incoming leads by addressing their needs in a proffessional manner. You will receive informaton like the lead's project description and timeline and your goal is to convince them that we are the best AI Agency on the market.\nIMPORTANT- Write Email in HTML+CSS ina formative way.And also use words like 'For Instance..' for regarding to previous project results.\n\n##Tools\n\nPrevious Project - Use this tool to search  through previous projects we've done that can be used to include inside of the email as results.\n\n##Rules\n\n1)Keep the email concise and proffessional and under 100 words.\n2)Your main objective is to convincethe lead to book in a call. Your job is to make them believe that we can deiliver the project thay have described and exceed their expectations.\n3)Retrieve information about previous projects to share with the lead to prove that our team is capable of handling their project. Find a similar project we have done to share with the lead. Share the result of how we helped the client.\n4)ALWAYS write the email in HTML with newlines:\n<br><br>\n5)DON'T add any emojis to the email.\n6)Make the output in the following format:\n----------------------------------------------\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Subject\": {\n      \"type\": \"string\",\n      \"description\": \"The subject line of the email\"\n    },\n    \"Email_Body\": {\n      \"type\": \"string\",\n      \"description\": \"The full body content of the email\"\n    }\n  },\n  \"required\": [\n    \"Subject\",\n    \"Email_Body\"\n  ]\n}\n-------------------------------------------\n##Final Takeaway\n\nSign off emails  as Arya , AS Solutions\nHere is the current Date/Time: {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -224,
+        -448
+      ],
+      "id": "60330f64-5583-4106-b98e-39d36965a9f2",
+      "name": "Sales Email Agent",
+      "retryOnFail": true,
+      "alwaysOutputData": false,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1i5z4LMr3Uzsf-t2nWd7IG9iFw4tu5ymguHyGZs3e3RM",
+          "mode": "list",
+          "cachedResultName": "Previous Projects",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1i5z4LMr3Uzsf-t2nWd7IG9iFw4tu5ymguHyGZs3e3RM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1i5z4LMr3Uzsf-t2nWd7IG9iFw4tu5ymguHyGZs3e3RM/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -128,
+        -224
+      ],
+      "id": "141fd18f-432e-4637-9c80-9017b7e5d862",
+      "name": "Previous Projects",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4vitUnlIlkLXRXl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1gAraNrfmu9NRH77Bhz-ThEHKF9-2jdAfanLSxZ9oK4A",
+          "mode": "list",
+          "cachedResultName": "Intake CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gAraNrfmu9NRH77Bhz-ThEHKF9-2jdAfanLSxZ9oK4A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gAraNrfmu9NRH77Bhz-ThEHKF9-2jdAfanLSxZ9oK4A/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        -80
+      ],
+      "id": "4c6c0e30-a26a-42a6-b0f6-ce3ba7533859",
+      "name": "Previous Projects1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4vitUnlIlkLXRXl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Subject\": {\n      \"type\": \"string\",\n      \"description\": \"The subject line of the email\"\n    },\n    \"Email_Body\": {\n      \"type\": \"string\",\n      \"description\": \"The full body content of the email\"\n    }\n  },\n  \"required\": [\n    \"Subject\",\n    \"Email_Body\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1264,
+        -80
+      ],
+      "id": "0d575b62-c0de-495c-b953-6429dbbcec2a",
+      "name": "Output Formater"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.data.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Approved",
+              "description": "=The sales agent approved the email and accepted the way it was written. The text that we are classifying intents that it was accepted and that everything was good |\nExample Output:\n\"yes\"\n\"that's fine\"\n\"looks good\"\n\"send it through\"\n\n**Infact look for positive feedback**"
+            },
+            {
+              "category": "Denied",
+              "description": "=The sales agent denied the email and denied the way it was written.\n\nThe text we are classifying intents that it needs updating or changing ( usually provided with feedback on how to do so ) |\n\nExample Output:\n\"Make it shorter\"\n\"I don't like it\"\n\"It's too long\"\n\"Include another project\"\n\"No\"\n\n**Infact look for negative feedback**"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "=#Overview\n<br><br>\nYou are an profffessional text feedback classyfier.\n<br><br>\n#Task\n\nPlease classify the text provided by the user into one of the following categories: \n<br>1)Approved<br>\n2)Denied<br><br>\n\n#Rules\n<br><br>\nAnd use the provided formatting instructions below. Don't explain, and only output the json.\n<br><br>\n#ALWAYS CHOOSE ANY ONE CATEGORY COMPULSORYLY!\nAND THINK BEFORE CHOOSING!",
+          "enableAutoFixing": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        -576
+      ],
+      "id": "2ad7265c-d5ba-4f1b-98d3-d5f29f319ba5",
+      "name": "Classify Feedback",
+      "retryOnFail": false,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        -224
+      ],
+      "id": "6d397eb7-a528-48b8-86b0-e579c0911d99",
+      "name": "Brain",
+      "credentials": {
+        "anthropicApi": {
+          "id": "PcjtIN6VpJTi0Pmd",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        -352
+      ],
+      "id": "75484566-8754-4888-a609-f117378d0a42",
+      "name": "Classifier",
+      "credentials": {
+        "openAiApi": {
+          "id": "aJn5jfYsp8jxYfC6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        -80
+      ],
+      "id": "4d539a88-9070-4b48-8f67-718191bb3749",
+      "name": "Rewriter",
+      "credentials": {
+        "anthropicApi": {
+          "id": "PcjtIN6VpJTi0Pmd",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=##Feedback Received \n\n{{ $json.data.text }}\n\n##Email Subject\n\n{{ $('Format Output Schema').item.json['Email Subject'] }}\n\n##Email Body\n\n{{ $('Format Output Schema').item.json['Email Body'] }}\n\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=#Overview\nYou are an expert sales person for an agency thet delivers AI solutions. Your job is to respond to incoming leads by addressing their needs in a proffessional manner. You will receive informaton like the lead's project description and timeline and your goal is to convince them that we are the best AI Agency on the market.\nIMPORTANT- Write Email in HTML+CSS ina formative way.And also use words like 'For Instance..' for regarding to previous project results.\n\n##Tools\n\nProject - Use this tool to search  through previous projects we've done that can be used to include inside of the email as results.\n\n##Rules\n\n1)Keep the email concise and proffessional and under 100 words.\n2)Your main objective is to convincethe lead to book in a call. Your job is to make them believe that we can deiliver the project thay have described and exceed their expectations.\n3)Retrieve information about previous projects to share with the lead to prove that our team is capable of handling their project. Find a similar project we have done to share with the lead. Share the result of how we helped the client.\n4)ALWAYS write the email in HTML with newlines<br><br>\n5)DON'T add any emojis to the email.\n6)Make the output in the following format:\n----------------------------------------------\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Subject\": {\n      \"type\": \"string\",\n      \"description\": \"The subject line of the email\"\n    },\n    \"Email_Body\": {\n      \"type\": \"string\",\n      \"description\": \"The full body content of the email\"\n    }\n  },\n  \"required\": [\n    \"Subject\",\n    \"Email_Body\"\n  ]\n}\n-------------------------------------------\n##Final Takeaway\n\nSign off emails  as Arya , AS Solutions\nHere is the current Date/Time: {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1056,
+        -304
+      ],
+      "id": "0de4a241-704f-401e-ab6b-4453b5d1eaf7",
+      "name": "Rewriting Agent",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "content": "## Data Collected [**Lead**]",
+        "height": 240,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        -528
+      ],
+      "id": "26a82c32-33d2-460e-a736-d88d2e45cf8e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Store",
+        "height": 240,
+        "width": 192,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        -528
+      ],
+      "id": "298e3c8d-777b-4924-836f-f6a2d7b2f00f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Draft Emails ",
+        "height": 448,
+        "width": 416,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -528
+      ],
+      "id": "6dd8c248-8234-4d4f-91da-7cabbe1e9cf0",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Get And Classify FeedBack By Owner",
+        "height": 432,
+        "width": 784,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -672
+      ],
+      "id": "56c758c4-a103-48de-95fa-a9c49771aeec",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Re-Draft Email Using Feedback",
+        "height": 416,
+        "width": 416,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        976,
+        -368
+      ],
+      "id": "15d4de57-0eca-470e-a8b5-60f98a6615c1",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Send Email",
+        "height": 240,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        -672
+      ],
+      "id": "8f3d936b-07ed-4caa-aa14-013cea1cfd76",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Intake Submitted": {
+      "main": [
+        [
+          {
+            "node": "Format Intake Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to CRM": {
+      "main": [
+        [
+          {
+            "node": "Sales Email Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output Format": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Sales Email Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output Schema": {
+      "main": [
+        [
+          {
+            "node": "Human in the loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Human in the loop": {
+      "main": [
+        [
+          {
+            "node": "Classify Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Intake Fields": {
+      "main": [
+        [
+          {
+            "node": "Add to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Email Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Output Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Previous Projects": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Email Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Previous Projects1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Rewriting Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output Formater": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Rewriting Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Feedback": {
+      "main": [
+        [
+          {
+            "node": "Send Intake Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rewriting Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sales Email Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifier": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify Feedback",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewriter": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewriting Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewriting Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Output Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6b3df1e2-06b0-47e0-b638-7d88cea5db67",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "989074a2911041fc135d491b212a27b4bae72585d15252132315be3ee2c31a3b"
+  },
+  "id": "oPi2f4Su1a6NPFdn",
+  "tags": []
+}

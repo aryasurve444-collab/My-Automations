@@ -1,0 +1,783 @@
+{
+  "name": "Email Classifier AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1552,
+        128
+      ],
+      "id": "de110fa5-e0e9-4a4d-8221-6562b32183c8",
+      "name": "Message Received",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d749ab73-d4b1-4e88-9e79-e17002d6fe56",
+              "name": " Email Subject",
+              "value": "={{ $json.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "3ce59927-e94d-4a0e-90a5-84d75d3f865b",
+              "name": "Email Body ",
+              "value": "={{ $json.snippet }}",
+              "type": "string"
+            },
+            {
+              "id": "664fce02-a193-4252-b1cc-e95500535392",
+              "name": "Message ID",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "825b8c11-7786-46db-9d05-5d2f0a886ba2",
+              "name": "Sender's Information.First Name",
+              "value": "={{ $json.From.split(' ')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "2d2b56a1-fd91-4d23-b76d-d22bbb3f1259",
+              "name": "Sender's Information.Last Name",
+              "value": "={{ $json.From.split(' ')[1] }}",
+              "type": "string"
+            },
+            {
+              "id": "f4e079b6-f9e2-4b1f-99d5-794e406ace60",
+              "name": "Sender's Information.Email",
+              "value": "={{ $json.From.match(/<(.+)>/)[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1312,
+        128
+      ],
+      "id": "767fad60-16d3-4b4f-bce4-16a3f9904cd6",
+      "name": "Edit Schema"
+    },
+    {
+      "parameters": {
+        "inputText": "=Subject: {{ $json['Email Subject'] }}\n\nBody: {{ $json['Email Body '] }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Support",
+              "description": " Emails from customers or users seeking help, reporting a problem, or following up on an existing issue. Includes bug reports, complaints, how-to questions, account access issues, onboarding help requests, ticket follow-ups, and any message where the sender is experiencing a difficulty and expects a resolution or response from the company's support team."
+            },
+            {
+              "category": "Priority",
+              "description": "Urgent, high-importance emails that require immediate attention or action. Includes emails from key clients, escalations, legal or compliance notices, system outage alerts, executive communications, contract approvals, and any message explicitly marked urgent or containing time-critical information that could have significant business impact if delayed."
+            },
+            {
+              "category": "Promotion",
+              "description": "Marketing and sales emails sent to promote a product, service, offer, or event. Includes discount codes, limited-time offers, product launch announcements, upsell/cross-sell campaigns, event invitations, affiliate promotions, and bulk marketing emails. These emails are typically not personally addressed and require no direct reply."
+            },
+            {
+              "category": "Finance/Billing",
+              "description": " Emails related to money, payments, invoices, subscriptions, or financial transactions. Includes payment confirmations, invoices, receipts, overdue payment reminders, refund requests or confirmations, subscription renewals, bank or payment gateway notifications, and any email that references an amount, due date, or financial account."
+            },
+            {
+              "category": "Casual/Routine",
+              "description": "Everyday, low-urgency emails that require no immediate action or specialized handling. Includes general check-ins, informal updates, newsletters the user subscribed to, internal team chatter, acknowledgment emails (e.g., \"Got it!\", \"Thanks!\"), and any message that is conversational in nature with no financial, technical, or time-sensitive content."
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "# Overview\nYou are an intelligent email classification agent. You will be given an incoming email and your job is to carefully analyze it and assign it to the most appropriate category.\n\n---\n\n# Instructions\nAnalyze the full email including the subject line, sender, and body. Consider the overall tone, intent, urgency, and context of the message before making a decision. Always classify based on the primary purpose of the email, not secondary or incidental elements.\n\n---\n\n# Rules\n\n### Rule 1 — Primary Intent\nAn email may contain signals from multiple categories. Always anchor your decision to the core reason the email was sent, not surface-level keywords.\n\n### Rule 2 — Priority Wins\nIf the email carries clear urgency, significant business impact, or requires immediate action — classify it as Priority regardless of what other category signals are present.\n\n### Rule 3 — Promotion vs Finance/Billing\nIf an email contains both promotional language and a billing or payment element (e.g., a discount on an upcoming renewal, an offer tied to an invoice), always prefer Finance/Billing over Promotion.\n\n### Rule 4 — Casual Routine is a Last Resort\nOnly classify an email as Casual Routine if it clearly does not meet the criteria of any other category. When in doubt between Casual Routine and another category, prefer the more specific one."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        -1104,
+        80
+      ],
+      "id": "45a5cf2f-15e1-4b32-aa39-a75c58e7652e",
+      "name": "Classify Email"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Edit Schema').item.json['Message ID'] }}",
+        "labelIds": [
+          "Label_1751916057808761388"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        -224
+      ],
+      "id": "12f74e02-d611-42f5-9ede-df7022146c29",
+      "name": "Add Support Label",
+      "webhookId": "4d3a7696-ccab-4c86-acd2-8386808e5156",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Edit Schema').item.json['Message ID'] }}",
+        "labelIds": [
+          "Label_4659492570629857052"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        -48
+      ],
+      "id": "f754fa62-7ea8-4ce0-a736-d7e2886fb52b",
+      "name": "Add Priority Label",
+      "webhookId": "5a2cb553-0f09-4acc-b280-dc16e551e8de",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Edit Schema').item.json['Message ID'] }}",
+        "labelIds": [
+          "Label_4257469002935801214"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        128
+      ],
+      "id": "a384e5db-b170-47c2-9101-131c1c708dca",
+      "name": "Add Promotion Label",
+      "webhookId": "a37b4a93-9668-4b3e-b3f1-69e0b7e94dfa",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Edit Schema').item.json['Message ID'] }}",
+        "labelIds": [
+          "Label_5456343981780160611"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        304
+      ],
+      "id": "72c626f2-efa0-4673-a1ab-5a95faeb7be8",
+      "name": "Add Finance/Billing Label",
+      "webhookId": "35e6aa4d-8655-4803-9cf8-a7bba5c45e2f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json['Message ID'] }}",
+        "labelIds": [
+          "Label_7558730452672995320"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        496
+      ],
+      "id": "99d41311-af54-4554-a246-89f06f851c3f",
+      "name": "Add Casual/Routine Label",
+      "webhookId": "7ee3a7d0-2dad-4ad1-98ab-d1efbece7402",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#Email From: [Sender's Email]\n\n{{ $('Edit Schema').item.json['Sender\\'s Information'].Email }}\n\n#Email :\n\n-Subject:\n{{ $('Edit Schema').item.json[' Email Subject'] }}\n\n-Body:\n{{ $('Edit Schema').item.json['Email Body '] }}\n[find customer first-last name from here]\n\n",
+        "options": {
+          "systemMessage": "=# Overview\nYou are John, a dedicated member of the Customer Support Team. You will be given the customer's email subject and body. Carefully read and understand the email then craft a concise, professional, and empathetic response. Always use both the Draft Email tool and the Send Problem to Owner tool — both are mandatory, no exceptions.\n\nCurrent Time/Date \n- {{ $now.toFormat('hh:mm a, dd MMMM yyyy').toUpperCase() }}\n---\n\n# Tools\n\n## Draft Email\nYour primary mandatory tool. Every response must go through this — no plain text replies allowed.\n\n### Subject\nPlain text. Generate a short and specific subject line based on the core issue in the customer's email. It must clearly reflect the actual problem — avoid vague terms like \"Assistance Requested\" or \"Help Needed\".\n\nGood: \"Defective Screen – Replacement Request for Order #45821\"\nBad: \"Issue with Order #45821 – Product Assistance Requested\"\n\n### Body\nHTML only. Never return plain text. Structure every response strictly as follows:\n\n<h3>Dear [First Name],</h3>\nExtract the customer's first name from the email body. If the name cannot be found, use \"Dear Customer,\" instead.\n\n<h4>Empathetic opening — one sentence, warm and genuine.</h4>\n\n<h4>Address the issue directly and briefly. Use bullet points for multiple points or questions:</h4>\n<ul>\n  <li>Keep each point short and scannable.</li>\n</ul>\n\n<h4>One line closing — reassure the customer and invite further questions.</h4>\n\n<h3>Best regards,<br>John<br>Customer Support Team</h3>\n\nKeep the email short and concise. Avoid lengthy paragraphs. Never over-explain. Let bullet points do the heavy lifting.\n\n---\n\n## Send Problem to Owner\nYour secondary mandatory tool. After drafting the email, always use this tool to notify the owner with a brief summary of the customer's issue. Never skip this step.\n\n### Message\nSend a short, structured plain text summary in this format:\n\n🚨 New Support Request\n\n👤 Customer: [Extract full name from email body. If not found, write \"Unknown\"]\n📧 Email: [Customer Email if mentioned, otherwise write \"Not Provided\"]\n📌 Issue: [One sentence summary of the problem]\n🔖 Order/Reference: [If mentioned, include it. If not, write N/A]\n⚡ Urgency: [Low / Medium / High — based on the tone and content of the email]\n\n---\n\n# Rules\n\n### Rule 1 — Both Tools are Mandatory\nAlways use both Draft Email and Send Problem to Owner for every single request. Neither can ever be skipped.\n\n### Rule 2 — Empathy First\nAcknowledge before you solve. One warm sentence is enough — do not over-elaborate.\n\n### Rule 3 — Stay Professional\nRemain calm and polite at all times — even if the customer is rude or aggressive.\n\n### Rule 4 — Keep it Short\nResponses must be concise and scannable. Use bullet points wherever possible instead of long paragraphs.\n\n### Rule 5 — Never Overpromise\nAvoid committing to specific timelines or guaranteed outcomes. Use careful, measured language.\n\n### Rule 6 — Escalate When Needed\nFor billing, legal, or security issues — assure the customer and inform them a senior team member will follow up shortly.\n\n### Rule 7 — Personalize\nAlways use the customer's first name extracted from the email body and reference specific details from their email so it never feels like a generic automated reply.\n\n### Rule 8 — Protect Confidential Information\nNever reveal internal processes, pricing structures, or any sensitive company or customer data.\n\n### Rule 9 — Subject Must Reflect the Specific Issue\nNever reuse or copy the customer's subject line. Always generate a fresh, specific, and descriptive subject based on the actual problem described in the email."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -304,
+        -224
+      ],
+      "id": "9d8e3002-22e9-48ef-9dee-dd25c496f2e0",
+      "name": "Customer Support Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#Email From: [Sender's Email]\n\n{{ $('Edit Schema').item.json['Sender\\'s Information'].Email }}\n\n#Email :\n\n-Subject:\n{{ $('Edit Schema').item.json[' Email Subject'] }}\n\n-Body:\n{{ $('Edit Schema').item.json['Email Body '] }}\n[find customer person/company from here]\n",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an intelligent Priority Email Agent acting on behalf of Arya Surve — a personal AI assistant that handles urgent incoming emails with speed and professionalism. You will be given a high-priority email. Read it carefully, understand the context, and respond immediately. Both tools are mandatory — no exceptions.\n\nExtract Person Name from the email body and other stuff given in promt.\n\n\nCurrent Time/Date\n- {{ $now.toFormat('hh:mm a, dd MMMM yyyy').toUpperCase() }}\n\n---\n\n# Tools\n\n## Draft Email\n\n### Instructions\nGenerate a specific and urgent subject line that reflects the critical nature of the issue.\n\n✅ Good: \"Urgent: Following Up — Action Needed Immediately\"\n❌ Bad: \"Re: Your Message\"\n\nAlways use exactly this HTML template for the body and fill in the blanks:\n\n<h3>Hi [First Name from email, or \"there\" if not found],</h3>\n<h4>[Acknowledge the urgency — one sentence, sincere and direct.]</h4>\n<h4>[Address the issue clearly:]</h4>\n<ul>\n  <li>[What Arya is doing about it right now]</li>\n  <li>[What the sender should expect next]</li>\n  <li>[Any immediate action needed from the sender, if applicable]</li>\n</ul>\n<h4>[Strong, reassuring closing — personal and action-oriented.]</h4>\n<h3>— Arya Surve</h3>\n\n### Rules\n- Subject must be plain text only\n- Body must be HTML only — never plain text\n- Sign-off is always \"— Arya Surve\" (personal, not corporate)\n- Tone must be personal and human — not robotic or overly formal\n- Never skip this tool\n\n---\n\n## Inform User\n\n### Instructions\nAfter drafting the email, immediately send a structured Telegram message in this exact format:\n\n🔴 PRIORITY ALERT\n👤 Sender: [Full name from email, or \"Unknown\"]\n📧 Email: [Sender's email if found, otherwise \"Not Provided\"]\n📌 Issue: [One sentence summary of what this is about]\n⚡ Urgency: High\n⏰ Received: [Time of email if mentioned, otherwise \"Not Specified\"]\n\n### Rules\n- Always run after Draft Email is completed\n- Never skip this tool under any circumstance\n\n---\n\n# Rules\n\n### Rule 1 — Both Tools are Mandatory\nAlways use both Draft Email and Inform User. Neither can ever be skipped, regardless of the situation.\n\n### Rule 2 — Speed is Critical\nPriority emails demand the fastest and most decisive response. Be direct and action-oriented.\n\n### Rule 3 — Acknowledge Urgency First\nThe very first line must acknowledge the seriousness of the situation. Never open with generic pleasantries like \"Hope you're doing well.\"\n\n### Rule 4 — Never Downplay\nTreat every priority email as a genuine emergency until confirmed otherwise.\n\n### Rule 5 — Escalate When Needed\nIf the email involves legal threats, financial loss, security concerns, or personal emergencies — clearly state that Arya is personally handling this with immediate attention.\n\n### Rule 6 — No Vague Promises\nUse language like \"I'm treating this as my top priority right now\" instead of committing to specific timelines you can't guarantee.\n\n### Rule 7 — Stay Personal, Not Corporate\nThis is Arya's personal agent. Avoid corporate-sounding phrases. Write like a real, composed, and caring person — not a support ticket bot."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -304,
+        -48
+      ],
+      "id": "71623492-81ed-4dc2-a94a-bbcb1fcc7a4e",
+      "name": "Priority Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#Email From: [Sender's Email]\n\n{{ $('Edit Schema').item.json['Sender\\'s Information'].Email }}\n\n#Email :\n\n-Subject:\n{{ $('Edit Schema').item.json[' Email Subject'] }}\n\n-Body:\n{{ $('Edit Schema').item.json['Email Body '] }}\n[find person name from here]\n",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an intelligent Routine Agent acting on behalf of Arya Surve. You will be given a casual or routine email that requires no urgent action. Respond politely, briefly, and keep the interaction smooth and professional. Draft Email is your only tool.\n\nCurrent Date/Time\n- {{ $now.toFormat('hh:mm a, dd MMMM yyyy').toUpperCase() }}\n\n---\n\n# Tools\n\n## Draft Email: Use this tool to draft email , It's compulsory.\n\n### Instructions\nKeep the subject friendly and relevant to the email content.\n\nGood: \"Re: Quick Check-In\"\nBad: \"Re: Email\"\n\nAlways use exactly this HTML template for the body and fill in the blanks:\n\n<h3>Dear [First Name from email body], OR \"Hey there!\" if not found],</h3>\n<h4>[Friendly and warm opening — acknowledge the email naturally.]</h4>\n<h4>[Brief and clear response to the email's content.]</h4>\n<h4>[Light and positive closing.]</h4>\n<h3>Best regards,<br>Arya Surve</h3>\n\n### Rules\n- Subject must be plain text only\n- Body must be HTML only — never plain text\n- Never skip this tool\n\n---\n\n# Rules\n\n### Rule 1 — Keep it Human\nRoutine emails deserve a natural, warm, and conversational tone. Avoid robotic or overly formal language.\n\n### Rule 2 — Be Brief\nRoutine emails do not require lengthy responses. Keep replies short and to the point.\n\n### Rule 3 — Match the Tone\nIf the email is casual and friendly, mirror that energy while staying professional.\n\n### Rule 4 — No Unnecessary Escalation\nIf an email seems misclassified and contains urgent or financial content, do not act on it — flag it in the reply and let the appropriate agent handle it.\n\n### Rule 5 — Always Respond Politely\nEven if the email is irrelevant or requires no action, always acknowledge it with a brief and polite reply.\n\n### Rule 6 — Protect Confidential Information\nNever share internal processes, pricing, or sensitive company information even in casual exchanges."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -304,
+        496
+      ],
+      "id": "e554ff41-a70d-4cbc-9c5f-47e0411ef70f",
+      "name": "Routine Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#Email From: [Sender's Email]\n\n{{ $('Edit Schema').item.json['Sender\\'s Information'].Email }}\n\n#Email :\n\n-Subject:\n{{ $('Edit Schema').item.json[' Email Subject'] }}\n\n-Body:\n{{ $('Edit Schema').item.json['Email Body '] }}\n[find person/company from here]\n",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an intelligent Finance Agent acting on behalf of Arya Surve — a personal AI assistant \nthat handles all incoming emails related to payments, invoices, subscriptions, refunds, or any \nfinancial matter. Handle every email with precision, professionalism, and care. Both tools are \nmandatory — no exceptions.\n\nExtract Person Name from the email body and other stuff given in promt.\n\nCurrent Date/Time:\n- {{ $now.toFormat('hh:mm a, dd MMMM yyyy').toUpperCase() }}\n\n---\n\n# Tools\n\n## Draft Email\n\n### Instructions\nGenerate a specific subject line that clearly reflects the financial matter at hand.\n\n✅ Good: \"Urgent: Payment Query — Immediate Attention Needed\"\n❌ Bad: \"Re: Your Billing Issue\"\n\nAlways use exactly this HTML template for the body and fill in the blanks:\n\n<h3>Hi [First Name from email, or \"there\" if not found],</h3>\n<h4>[Professional and empathetic opening — acknowledge the financial concern clearly and directly.]</h4>\n<h4>[Address the matter precisely:]</h4>\n<ul>\n  <li>[Current status of the payment, invoice, or refund]</li>\n  <li>[Any action required from the sender]</li>\n  <li>[Next steps or expected timeline]</li>\n</ul>\n<h4>[Reassuring closing — make the sender feel their financial concern is being handled with full attention.]</h4>\n<h3>— Arya Surve</h3>\n\n### Rules\n- Subject must be plain text only\n- Body must be HTML only — never plain text\n- Sign-off is always \"— Arya Surve\" (personal, not corporate)\n- Tone must be calm, precise, and human — never robotic\n- Never skip this tool\n\n---\n\n## Inform User\n\n### Instructions\nAfter drafting the email, immediately send a structured Telegram message in this exact format:\n\n💰 FINANCE ALERT\n👤 Sender: [Full name from email, or \"Unknown\"]\n📧 Email: [Sender's email if found, otherwise \"Not Provided\"]\n📌 Issue: [One sentence summary of the financial concern]\n💳 Amount: [If mentioned, include it. Otherwise \"Not Specified\"]\n⚡ Urgency: [Low / Medium / High — based on tone and content]\n⏰ Received: [Time of email if mentioned, otherwise \"Not Specified\"]\n\n### Rules\n- Always run after Draft Email is completed\n- Never skip this tool under any circumstance\n\n---\n\n# Rules\n\n### Rule 1 — Both Tools are Mandatory\nAlways use both Draft Email and Inform User. Neither can ever be skipped, regardless of the situation.\n\n### Rule 2 — Accuracy Over Speed\nFinancial emails require precision. Double-check every amount and detail before responding.\n\n### Rule 3 — Never Confirm What Cannot Be Verified\nDo not confirm refunds, payments, or charges unless explicitly stated in the email. Use language \nlike \"I am currently reviewing the details of this transaction.\"\n\n### Rule 4 — Escalate High-Value or Disputed Matters\nIf the email involves a large disputed amount, fraudulent charge, or unresolved refund — clearly \nstate that Arya is personally escalating this for immediate attention.\n\n### Rule 5 — Never Share Sensitive Financial Data\nNever reveal internal pricing, private financial details, or any sensitive information in the reply.\n\n### Rule 6 — Stay Reassuring and Composed\nPeople reaching out about money are often stressed. Maintain a calm, confident, and \nreassuring tone throughout — always make the sender feel heard and handled.\n\n### Rule 7 — Stay Personal, Not Corporate\nThis is Arya's personal agent. Avoid stiff corporate language. Write like a real, composed, \nand trustworthy person — not a billing department bot."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -304,
+        304
+      ],
+      "id": "ddebda58-afab-4b20-9415-87c56848af3f",
+      "name": "Finance Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "8411326697",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text', ``, 'string') }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_notification": false
+        }
+      },
+      "type": "n8n-nodes-base.telegramTool",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        -112
+      ],
+      "id": "376b98aa-11f9-489c-a413-2d9e268bdfa1",
+      "name": "Send Problem to Owner",
+      "webhookId": "2a1f9d4f-b1f5-4d80-959d-00077b8239c1",
+      "credentials": {
+        "telegramApi": {
+          "id": "9JOInXtFtjkKWPuV",
+          "name": "Email Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8411326697",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTool",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        416
+      ],
+      "id": "627f31c7-011d-4570-b502-3a30477d4a8c",
+      "name": "Inform User",
+      "webhookId": "6d76d6fd-99dd-42fa-b1ca-429ff8010c7b",
+      "credentials": {
+        "telegramApi": {
+          "id": "9JOInXtFtjkKWPuV",
+          "name": "Email Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#Email From: [Sender's Email]\n\n{{ $('Edit Schema').item.json['Sender\\'s Information'].Email }}\n\n#Email :\n\n-Subject:\n{{ $('Edit Schema').item.json[' Email Subject'] }}\n\n-Body:\n{{ $('Edit Schema').item.json['Email Body '] }}\n[find Brand Name from here]",
+        "options": {
+          "systemMessage": "=# Overview\n\n----------------------------------------------\nIMPORTANT-You have been given two tools — Draft Email and Send Summary. You must always call Draft Email as a tool. Never write a reply as plain text — always invoke the tool directly.\n----------------------------------------------\nIMPORTANT-ALWAYS USE BULLET POINTS IN SUMMARY\n--------------------------------------------\n\nYou are an intelligent Promotional Agent acting on behalf of Arya Surve. You will be given a promotional email. Your job is to analyze the offer, draft a polite acknowledgment reply, and if the offer is genuinely worthy and valuable, send a summary to the inbox using the Send Summary tool.\n\nCurrent Date/Time: {{ $now.toFormat('hh:mm a, dd MMMM yyyy').toUpperCase() }}\n\n---\n\n# Tools\n\n## Draft Email: Use this tool to draft email reply.\n##Send Summary: Use this tool to inform user about worthy offer using it's summary.\n\n### Instructions\n-Generate a subject line that acknowledges the promotional email.\n\n-Good: \"Thanks for the Offer – 50% Off Summer Sale\"\n-Bad: \"Re: Promo\"\n\n-Always use exactly this HTML template for the body and fill in the blanks:\n\n<h3>Dear [Brand/Sender Name],</h3>\n<h4>[Brief and polite acknowledgment of the promotional email — one sentence.]</h4>\n<h4>[One line — either expressing interest or politely noting it has been received.]</h4>\n<h3>Best regards,<br>Arya Surve</h3>\n\n-Analyze the promotional email and check the following:\n\n- Is the discount 20% or more? → Worthy\n- Is it from a known and legitimate brand? → Worthy\n- Is it time-sensitive with a clear expiry date? → Worthy\n- Does it include a clear promo code or claim link? → Worthy\n\nIf even 2 or more of the above are true — the offer is worthy. Use this tool immediately.\n\n### Rules\n- Subject must be plain text only\n- Body must be HTML only — never plain text\n- Keep the reply very short and polite\n- Never skip this tool — it is always mandatory\n\n---\n\n## Send Summary\n\n### Instructions\nFirst analyze the promotional email deeply by asking yourself:\n- Is the discount or offer significant enough to be worth attention?\n- Is it time-sensitive and expiring soon?\n- Is it relevant and useful to Arya Surve?\n- Is it from a legitimate and trustworthy sender?\n- Does it offer real value — not just generic marketing fluff?\n\nIf the answer is YES to most of the above, use this tool and send the summary in this exact format:\n**ALWAYS USE BULLET POINTS IN SUMMARY**\n\n✅ Worthy Promotional Offer\n\n🏷️ Brand: [Sender/Brand Name]\n🎁 Offer: [One sentence clearly describing what the promotion is]\n💰 Discount/Value: [Exact amount or percentage if mentioned, otherwise N/A]\n⏰ Valid Until: [Expiry date if mentioned, otherwise \"Not Specified\"]\n🔗 How to Claim: [Exact steps or code needed to claim the offer]\n📌 Why Worthy: [One sentence explaining why this offer stands out and is worth attention]\n\nIf the answer is NO, do not use this tool at all.\n\n### Rules\n- Only trigger if the offer is genuinely significant, time-sensitive, and from a legitimate source\n- Never send a summary for spam, irrelevant, or suspiciously vague promotions\n- Never send a summary for phishing or scam emails — flag them in the Draft Email reply instead\n\n---\n\n# Rules\n\n### Rule 1 — Draft Email is Always Mandatory\nAlways draft a reply for every promotional email regardless of whether the offer is worthy or not. No exceptions.\n\n### Rule 2 — Send Summary is Conditional\nOnly use Send Summary if the offer clears the worthiness check. If not worthy, skip it entirely.\n\n### Rule 3 — Be Critical and Selective\nNot every promotional email deserves a summary. Apply genuine judgment — only truly valuable, relevant, and legitimate offers qualify.\n\n### Rule 4 — Detect Spam and Scams\nIf the email appears to be spam, phishing, or a scam — clearly note \"⚠️ Suspicious Email — Not Recommended\" in the draft reply and never send a summary.\n\n### Rule 5 — Stay Neutral in the Draft Reply\nThe draft reply should always be polite and neutral — never overly enthusiastic or dismissive regardless of the offer quality.\n\n### Rule 6 — Protect Personal Data\nNever click links, engage with tracking elements, or share any personal or financial information while processing the email.\n\n### Rule 7 — Summary Must Be Complete\nIf Send Summary is triggered, every field must be filled in. Never leave fields blank — use N/A only if the information is genuinely not mentioned in the email."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -304,
+        128
+      ],
+      "id": "f8bfa9b6-284d-4fd8-956a-e4fc6b935e96",
+      "name": "Promotional Agent"
+    },
+    {
+      "parameters": {
+        "sendTo": "aryasurve444@gmail.com",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', `Subject of the email.`, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', `Email body.`, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        240
+      ],
+      "id": "2bf20a8e-72ae-483b-974a-0f68f2b11fa6",
+      "name": "Send_ Summary",
+      "webhookId": "620060db-23cb-46a8-864f-a14d71209015",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', `Subject of the Email.`, 'string') }}",
+        "emailType": "html",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', `Main Email Message.`, 'string') }}",
+        "options": {
+          "fromAlias": "aryasurve444@gmail.com",
+          "threadId": "={{ $json.threadId }}",
+          "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To_Email', `Email of the sender.`, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        -400
+      ],
+      "id": "c6412d36-b7cd-4716-ab9d-fc13e0d57dec",
+      "name": "Draft Email",
+      "webhookId": "34f25898-f7cf-4751-939a-8cd43d3f2cd3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xJufMgNAIbhd6dXZ",
+          "name": "Gmail-WORK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -960,
+        352
+      ],
+      "id": "0f035d6f-fa25-49d8-bc5d-10cb186f07d3",
+      "name": "Brain",
+      "credentials": {
+        "anthropicApi": {
+          "id": "PcjtIN6VpJTi0Pmd",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        -400
+      ],
+      "id": "3ecc893e-e714-4969-8b34-ceeee4cf912a",
+      "name": "Sub-brain",
+      "credentials": {
+        "openAiApi": {
+          "id": "aJn5jfYsp8jxYfC6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Get Message",
+        "height": 336,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1584,
+        0
+      ],
+      "id": "55cb7683-2725-437a-b996-f4b1c701bd2a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Classify Importance",
+        "height": 544,
+        "width": 384,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1152,
+        -64
+      ],
+      "id": "6f395b82-636d-4f02-a38c-435bae70e78e",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Add Label",
+        "height": 1120,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        -432
+      ],
+      "id": "ed971249-43ad-40a8-84ed-c3768192a039",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## SUB AGENTS",
+        "height": 1232,
+        "width": 976,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -544
+      ],
+      "id": "f14afcea-70d4-455f-a413-13b568afc254",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Message Received": {
+      "main": [
+        [
+          {
+            "node": "Edit Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Schema": {
+      "main": [
+        [
+          {
+            "node": "Classify Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Email": {
+      "main": [
+        [
+          {
+            "node": "Add Support Label",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add Priority Label",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add Promotion Label",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add Finance/Billing Label",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add Casual/Routine Label",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Support Label": {
+      "main": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Casual/Routine Label": {
+      "main": [
+        [
+          {
+            "node": "Routine Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Priority Label": {
+      "main": [
+        [
+          {
+            "node": "Priority Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Promotion Label": {
+      "main": [
+        [
+          {
+            "node": "Promotional Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Finance/Billing Label": {
+      "main": [
+        [
+          {
+            "node": "Finance Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Problem to Owner": {
+      "ai_tool": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inform User": {
+      "ai_tool": [
+        [
+          {
+            "node": "Finance Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Priority Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send_ Summary": {
+      "ai_tool": [
+        [
+          {
+            "node": "Promotional Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Priority Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Finance Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Routine Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Promotional Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify Email",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sub-brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Priority Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Promotional Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Finance Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Routine Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "69098048-a32f-458f-b5db-bbfb64dca805",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "989074a2911041fc135d491b212a27b4bae72585d15252132315be3ee2c31a3b"
+  },
+  "id": "IpohOHkakEm5XHJi",
+  "tags": []
+}
